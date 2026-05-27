@@ -215,6 +215,74 @@ def listar_casos_cerca_inicio_poliza(limit: int = 20) -> dict:
         db.close()
 
 
+def listar_narrativas_similares(threshold: float = 0.22, limit: int = 15) -> dict:
+    """
+    Devuelve pares de siniestros con narrativas similares detectadas por TF-IDF coseno.
+    Activa la regla RF-07 (Narrativa Clonada). Útil para detectar fraude coordinado,
+    anillos de fraude o talleres cómplices que presentan relatos repetitivos.
+    """
+    db = _get_db()
+    try:
+        pares_sql = text("""
+            SELECT
+                n.id_par, n.id_siniestro_a, n.id_siniestro_b,
+                n.cluster_narrativa,
+                n.similitud_coseno_simulada AS similitud,
+                n.descripcion_a, n.descripcion_b,
+                p.nombre_proveedor
+            FROM claims.narrativas_similares n
+            LEFT JOIN claims.siniestros s ON s.id_siniestro = n.id_siniestro_a
+            LEFT JOIN claims.proveedores p ON p.id_proveedor = s.id_proveedor
+            WHERE n.similitud_coseno_simulada >= :threshold
+              AND n.metodo = 'tfidf_cosine'
+            ORDER BY n.similitud_coseno_simulada DESC
+            LIMIT :limit
+        """)
+        pares = [dict(r) for r in db.execute(pares_sql, {"threshold": threshold, "limit": limit}).mappings()]
+
+        clusters_sql = text("""
+            SELECT
+                cluster_narrativa,
+                COUNT(*) AS total_pares,
+                ROUND(AVG(similitud_coseno_simulada)::numeric, 3) AS similitud_promedio,
+                COUNT(DISTINCT id_siniestro_a) + COUNT(DISTINCT id_siniestro_b) AS casos_aprox
+            FROM claims.narrativas_similares
+            WHERE similitud_coseno_simulada >= :threshold AND metodo = 'tfidf_cosine'
+            GROUP BY cluster_narrativa
+            ORDER BY AVG(similitud_coseno_simulada) DESC
+        """)
+        clusters = [dict(r) for r in db.execute(clusters_sql, {"threshold": threshold}).mappings()]
+
+        total_pares = db.execute(
+            text("SELECT COUNT(*) FROM claims.narrativas_similares WHERE similitud_coseno_simulada >= :t AND metodo = 'tfidf_cosine'"),
+            {"t": threshold}
+        ).scalar() or 0
+
+        casos_involucrados = db.execute(text("""
+            SELECT COUNT(DISTINCT sin_id) FROM (
+                SELECT id_siniestro_a AS sin_id FROM claims.narrativas_similares WHERE similitud_coseno_simulada >= :t AND metodo = 'tfidf_cosine'
+                UNION
+                SELECT id_siniestro_b AS sin_id FROM claims.narrativas_similares WHERE similitud_coseno_simulada >= :t AND metodo = 'tfidf_cosine'
+            ) u
+        """), {"t": threshold}).scalar() or 0
+
+        return {
+            "tool": "listar_narrativas_similares",
+            "resumen": {
+                "total_clusters": len(clusters),
+                "total_pares": int(total_pares),
+                "casos_involucrados": int(casos_involucrados),
+            },
+            "clusters": clusters,
+            "pares_top": pares[:10],
+        }
+    except Exception as e:
+        logger.error(f"listar_narrativas_similares error: {e}")
+        return {"tool": "listar_narrativas_similares", "error": str(e)}
+    finally:
+        db.close()
+
+
 def generar_resumen_ejecutivo() -> dict:
     """
     Devuelve KPIs, hallazgos principales y recomendaciones para jefatura.

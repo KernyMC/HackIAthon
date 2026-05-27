@@ -18,7 +18,7 @@ def list_siniestros(
     ramo: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     score_min: Optional[float] = Query(None),
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(50, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ):
@@ -32,6 +32,15 @@ def list_siniestros(
         limit=limit,
         offset=offset,
     )
+
+
+@router.get("/narrativas/similares")
+def get_narrativas_similares(
+    threshold: float = Query(0.22, ge=0.0, le=1.0),
+    limit: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    return repository.get_narrativas_similares(db, threshold=threshold, limit=limit)
 
 
 @router.get("/siniestros/{id_siniestro}")

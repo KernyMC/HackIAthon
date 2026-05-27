@@ -9,6 +9,7 @@ import sys
 import json
 import logging
 from pathlib import Path
+from urllib.parse import quote_plus
 import pandas as pd
 from sqlalchemy import create_engine, text
 
@@ -20,7 +21,8 @@ DATA_DIR = REPO_ROOT / "data" / "synthetic"
 
 BOOL_MAP = {"Si": True, "No": False, "si": True, "no": False,
             "True": True, "False": False, "1": True, "0": False,
-            True: True, False: False}
+            True: True, False: False,
+            "No aplica": None, "no aplica": None, "N/A": None, "n/a": None}
 
 
 def get_engine():
@@ -29,7 +31,7 @@ def get_engine():
     db = os.environ.get("ALLOYDB_DATABASE", "fraudia")
     user = os.environ.get("ALLOYDB_USER", "loader_user")
     password = os.environ.get("ALLOYDB_PASSWORD", "")
-    url = f"postgresql+psycopg://{user}:{password}@{host}:{port}/{db}"
+    url = f"postgresql+psycopg://{quote_plus(user)}:{quote_plus(password)}@{host}:{port}/{db}"
     return create_engine(url, pool_pre_ping=True)
 
 
@@ -165,12 +167,12 @@ def load_siniestros(engine):
                 "tipo_impacto": row.get("tipo_impacto") or None,
                 "hora_evento": maybe_int(row.get("hora_evento")),
                 "tercero_identificado": norm_bool(row.get("tercero_identificado")),
-                "evidencia_camaras": row.get("evidencia_camaras") or None,
+                "evidencia_camaras": norm_bool(row.get("evidencia_camaras")),
                 "tipo_via": row.get("tipo_via") or None,
                 "clima": row.get("clima") or None,
                 "documento_inconsistente": norm_bool(row.get("documento_inconsistente")),
                 "relato_ilogico": norm_bool(row.get("relato_ilogico")),
-                "narrativa_cluster_id": row.get("narrativa_cluster_id") or None,
+                "narrativa_cluster_id": maybe_int(row.get("narrativa_cluster_id")),
                 "similitud_narrativa_max": maybe_float(row.get("similitud_narrativa_max")),
                 "etiqueta_fraude_simulada": maybe_int(row.get("etiqueta_fraude_simulada")),
                 "perfil_riesgo_generacion": row.get("perfil_riesgo_generacion") or None,
@@ -352,7 +354,7 @@ def load_documentos(engine):
                 "tipo_documento": row.get("tipo_documento"),
                 "entregado": norm_bool(row.get("entregado")),
                 "legible": norm_bool(row.get("legible")),
-                "fecha_emision": row.get("fecha_emision") or None,
+                "fecha_emision": None if pd.isna(row.get("fecha_emision")) else row.get("fecha_emision"),
                 "inconsistencia": norm_bool(row.get("inconsistencia_detectada")),
                 "observacion": row.get("observacion") or None,
             })
@@ -363,7 +365,7 @@ def load_narrativas(engine):
     df = pd.read_csv(DATA_DIR / "narrativas_similares.csv")
     logger.info(f"Loading narrativas: {len(df)} rows")
     with engine.begin() as conn:
-        conn.execute(text("TRUNCATE claims.narrativas_similares RESTART IDENTITY"))
+        conn.execute(text("TRUNCATE claims.narrativas_similares"))
         for _, row in df.iterrows():
             conn.execute(text("""
                 INSERT INTO claims.narrativas_similares

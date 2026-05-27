@@ -13,6 +13,7 @@ from .tools import (
     listar_documentos_faltantes_casos_criticos,
     listar_casos_cerca_inicio_poliza,
     generar_resumen_ejecutivo,
+    listar_narrativas_similares,
 )
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ TOOLS = [
     listar_documentos_faltantes_casos_criticos,
     listar_casos_cerca_inicio_poliza,
     generar_resumen_ejecutivo,
+    listar_narrativas_similares,
 ]
 
 _agent = None
@@ -37,13 +39,12 @@ def _get_agent():
 
     try:
         from google.adk.agents import Agent
-        from google.adk.models.lite_llm import LiteLlm
         from ..core.config import get_settings
 
         settings = get_settings()
         _agent = Agent(
             name="fraudia_claims_assistant",
-            model=LiteLlm(model=f"vertex_ai/{settings.gemini_model}"),
+            model=settings.gemini_model,
             description="Agente de análisis de posible fraude en siniestros de seguros.",
             instruction=AGENT_INSTRUCTIONS,
             tools=TOOLS,
@@ -118,7 +119,6 @@ async def _run_fallback_agent(session_id: str, message: str, db) -> dict:
     Fallback: use Gemini directly with tool dispatching based on message keywords.
     """
     from ..core.config import get_settings
-    import google.generativeai as genai
 
     settings = get_settings()
 
@@ -138,8 +138,13 @@ Datos recuperados por herramienta '{tool_name}':
 Responde en español de manera clara y profesional para un analista de seguros.
 """
     try:
-        genai.configure()
-        model = genai.GenerativeModel(settings.gemini_model)
+        import vertexai
+        from vertexai.generative_models import GenerativeModel
+        vertexai.init(
+            project=settings.google_cloud_project,
+            location=settings.google_cloud_location,
+        )
+        model = GenerativeModel(settings.gemini_model)
         response = model.generate_content(prompt)
         answer = response.text
     except Exception as e:
@@ -156,7 +161,9 @@ Responde en español de manera clara y profesional para un analista de seguros.
 def _dispatch_tool_by_keyword(message: str) -> dict:
     msg_lower = message.lower()
 
-    if any(k in msg_lower for k in ["proveedor", "taller", "clínica", "clinica"]):
+    if any(k in msg_lower for k in ["narrativa", "similar", "fraude coordinado", "taller cómplice", "taller complice", "clonada", "rf-07", "rf07", "anillo"]):
+        return listar_narrativas_similares()
+    elif any(k in msg_lower for k in ["proveedor", "taller", "clínica", "clinica"]):
         return analizar_proveedores_alertas()
     elif any(k in msg_lower for k in ["documento", "faltante", "inconsistente", "legible"]):
         return listar_documentos_faltantes_casos_criticos()
@@ -185,6 +192,7 @@ def _build_citations(tools_used: list) -> list:
         "listar_documentos_faltantes_casos_criticos": {"type": "sql", "source": "claims.documentos"},
         "listar_casos_cerca_inicio_poliza": {"type": "sql", "source": "claims.siniestros"},
         "generar_resumen_ejecutivo": {"type": "sql_view", "source": "claims.v_kpis"},
+        "listar_narrativas_similares": {"type": "sql", "source": "claims.narrativas_similares"},
     }
     return [citation_map[t] for t in tools_used if t in citation_map]
 

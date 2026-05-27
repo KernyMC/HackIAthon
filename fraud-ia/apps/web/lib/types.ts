@@ -88,7 +88,7 @@ export interface Proveedor {
   id_proveedor: string
   nombre_proveedor: string
   tipo: string
-  ciudad: string
+  ciudad_proveedor: string
   total_siniestros: number
   casos_rojos: number
   casos_amarillos: number
@@ -102,12 +102,19 @@ export interface Proveedor {
   antiguedad_meses?: number
 }
 
+export interface ChartData {
+  type: 'bar' | 'pie'
+  title: string
+  data: { name: string; value: number; color?: string }[]
+}
+
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   tools_used?: string[]
   citations?: Citation[]
   timestamp?: string
+  chart?: ChartData
 }
 
 export interface Citation {
@@ -122,3 +129,34 @@ export interface ChatResponse {
 }
 
 export type NivelRiesgo = 'Verde Bajo' | 'Amarillo Medio' | 'Rojo Alto' | 'all'
+
+export interface NarrativaPar {
+  id_par: number
+  id_siniestro_a: string
+  id_siniestro_b: string
+  cluster_narrativa: number
+  similitud: number
+  descripcion_a: string
+  descripcion_b: string
+  nombre_proveedor?: string
+}
+
+export interface NarrativaCluster {
+  cluster_narrativa: number
+  total_pares: number
+  similitud_promedio: number
+  casos_aprox: number
+}
+
+export interface NarrativasResumen {
+  total_clusters: number
+  total_pares: number
+  casos_involucrados: number
+  similitud_promedio: number
+}
+
+export interface NarrativasSimilaresResponse {
+  resumen: NarrativasResumen
+  clusters: NarrativaCluster[]
+  pares: NarrativaPar[]
+}

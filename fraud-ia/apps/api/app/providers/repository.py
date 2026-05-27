@@ -11,6 +11,7 @@ def get_provider_risk(db: Session, limit: int = 10) -> list:
             p.antiguedad_meses
         FROM claims.v_provider_risk vpr
         LEFT JOIN claims.proveedores p ON p.id_proveedor = vpr.id_proveedor
+        WHERE vpr.id_proveedor IS NOT NULL
         ORDER BY vpr.casos_rojos DESC, vpr.score_promedio DESC
         LIMIT :limit
     """)

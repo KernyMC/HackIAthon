@@ -21,12 +21,13 @@ sys.path.insert(0, str(REPO_ROOT / "apps" / "api"))
 
 def get_engine():
     from sqlalchemy import create_engine
+    from urllib.parse import quote_plus
     host = os.environ.get("ALLOYDB_HOST", "localhost")
     port = os.environ.get("ALLOYDB_PORT", "5432")
     db = os.environ.get("ALLOYDB_DATABASE", "fraudia")
     user = os.environ.get("ALLOYDB_USER", "loader_user")
     password = os.environ.get("ALLOYDB_PASSWORD", "")
-    url = f"postgresql+psycopg://{user}:{password}@{host}:{port}/{db}"
+    url = f"postgresql+psycopg://{quote_plus(user)}:{quote_plus(password)}@{host}:{port}/{db}"
     return create_engine(url, pool_pre_ping=True)
 
 
@@ -129,15 +130,7 @@ def ingest_file(engine, filepath: Path):
             emb_str = "[" + ",".join(str(v) for v in embedding) + "]"
 
         with engine.begin() as conn:
-            conn.execute(text("""
-                INSERT INTO rag.business_chunks
-                    (document_id, source_name, title, section, doc_type,
-                     chunk_index, chunk_text, metadata, embedding)
-                VALUES
-                    (:doc_id, :source, :title, :section, :doc_type,
-                     :idx, :text, CAST(:meta AS jsonb),
-                     CASE WHEN :emb IS NOT NULL THEN CAST(:emb AS vector) ELSE NULL END)
-            """), {
+            params = {
                 "doc_id": doc_id,
                 "source": source_name,
                 "title": title,
@@ -146,8 +139,26 @@ def ingest_file(engine, filepath: Path):
                 "idx": chunk["index"],
                 "text": chunk["text"],
                 "meta": json.dumps({"source": source_name, "section": chunk["section"]}),
-                "emb": emb_str,
-            })
+            }
+            if emb_str:
+                params["emb"] = emb_str
+                conn.execute(text("""
+                    INSERT INTO rag.business_chunks
+                        (document_id, source_name, title, section, doc_type,
+                         chunk_index, chunk_text, metadata, embedding)
+                    VALUES
+                        (:doc_id, :source, :title, :section, :doc_type,
+                         :idx, :text, CAST(:meta AS jsonb), CAST(:emb AS vector))
+                """), params)
+            else:
+                conn.execute(text("""
+                    INSERT INTO rag.business_chunks
+                        (document_id, source_name, title, section, doc_type,
+                         chunk_index, chunk_text, metadata)
+                    VALUES
+                        (:doc_id, :source, :title, :section, :doc_type,
+                         :idx, :text, CAST(:meta AS jsonb))
+                """), params)
 
     logger.info(f"  → Inserted {len(chunks)} chunks for {source_name}")
 

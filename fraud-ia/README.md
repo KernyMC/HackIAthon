@@ -89,7 +89,7 @@ export ALLOYDB_PORT=5432
 export ALLOYDB_DATABASE=fraudia
 export ALLOYDB_USER=app_user
 export ALLOYDB_PASSWORD=app_user_pass
-export GOOGLE_CLOUD_PROJECT=tu-proyecto
+export GOOGLE_CLOUD_PROJECT=
 export APP_ENV=local
 
 uvicorn app.main:app --reload --port 8080

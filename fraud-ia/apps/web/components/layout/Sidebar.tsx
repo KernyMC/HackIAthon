@@ -26,20 +26,16 @@ export default function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-[hsl(222,47%,9%)] border-r border-[hsl(217,33%,20%)] flex flex-col z-40">
+    <aside className="fixed left-0 top-0 h-full w-16 bg-[#0F0F0F] border-r border-[#2A2A2A] flex flex-col items-center z-40">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-[hsl(217,33%,20%)]">
-        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-600">
-          <ShieldAlert className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <p className="font-bold text-white text-sm leading-tight">FraudIA</p>
-          <p className="text-[10px] text-gray-400 leading-tight">Claims Assistant</p>
+      <div className="w-full flex items-center justify-center py-5 border-b border-[#2A2A2A]">
+        <div className="w-9 h-9 rounded-xl bg-[#C8FF00] flex items-center justify-center">
+          <ShieldAlert className="w-5 h-5 text-black" />
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 flex flex-col items-center gap-1 py-4 w-full px-2">
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive =
@@ -50,28 +46,30 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              title={item.label}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150',
+                'group relative w-full flex items-center justify-center h-10 rounded-xl transition-all duration-150',
                 isActive
-                  ? 'bg-blue-600/20 text-blue-400 border border-blue-600/30'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-[hsl(217,33%,17%)]'
+                  ? 'bg-[#C8FF00]/10 text-[#C8FF00]'
+                  : 'text-[#555555] hover:text-white hover:bg-[#1E1E1E]'
               )}
             >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              {item.label}
+              <Icon className="w-5 h-5" />
+              {isActive && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#C8FF00] rounded-r-full" />
+              )}
+              {/* Tooltip */}
+              <span className="absolute left-14 bg-[#1C1C1C] text-white text-xs font-medium px-2.5 py-1.5 rounded-lg border border-[#2A2A2A] opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity duration-150 shadow-xl z-50">
+                {item.label}
+              </span>
             </Link>
           )
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="px-6 py-4 border-t border-[hsl(217,33%,20%)]">
-        <p className="text-[10px] text-gray-500 leading-relaxed">
-          Este sistema genera alertas de revisión. No acusa fraude.
-        </p>
-        <p className="text-[10px] text-gray-600 mt-1">
-          Aseguradora del Sur © 2025
-        </p>
+      {/* Bottom disclaimer dot */}
+      <div className="pb-5 flex flex-col items-center gap-1">
+        <div className="w-2 h-2 rounded-full bg-[#C8FF00] pulse-dot" title="Sistema activo" />
       </div>
     </aside>
   )

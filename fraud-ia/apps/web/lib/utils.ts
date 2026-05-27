@@ -8,13 +8,13 @@ export function cn(...inputs: ClassValue[]) {
 export function getRiskColor(nivelRiesgo: string): string {
   switch (nivelRiesgo) {
     case 'Verde Bajo':
-      return 'bg-green-900/40 text-green-300 border border-green-700'
+      return 'bg-green-500/10 text-green-400 border border-green-500/20'
     case 'Amarillo Medio':
-      return 'bg-yellow-900/40 text-yellow-300 border border-yellow-700'
+      return 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
     case 'Rojo Alto':
-      return 'bg-red-900/40 text-red-300 border border-red-700'
+      return 'bg-red-500/10 text-red-400 border border-red-500/20'
     default:
-      return 'bg-gray-800 text-gray-300 border border-gray-600'
+      return 'bg-neutral-800 text-neutral-400 border border-neutral-700'
   }
 }
 

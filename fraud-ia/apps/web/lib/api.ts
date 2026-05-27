@@ -7,13 +7,11 @@ import type {
   Proveedor,
   Documento,
   ChatResponse,
+  NarrativasSimilaresResponse,
 } from './types'
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'
-
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const url = `${BASE_URL}${path}`
+  const url = path
   const res = await fetch(url, {
     ...options,
     headers: {
@@ -64,6 +62,10 @@ export async function chat(sessionId: string, message: string): Promise<ChatResp
     method: 'POST',
     body: JSON.stringify({ session_id: sessionId, message }),
   })
+}
+
+export async function getNarrativasSimilares(threshold = 0.22): Promise<NarrativasSimilaresResponse> {
+  return apiFetch<NarrativasSimilaresResponse>(`/api/narrativas/similares?threshold=${threshold}`)
 }
 
 export async function healthCheck(): Promise<{ status: string }> {

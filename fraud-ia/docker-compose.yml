@@ -1,5 +1,14 @@
 version: "3.9"
 
+# ──────────────────────────────────────────────────────────────────────────────
+# Para AI (chat + RAG) necesitas credenciales de Google Cloud.
+# Opción A: monta tu archivo de credenciales:
+#   GOOGLE_APPLICATION_CREDENTIALS=/run/secrets/gcp-creds
+#   y agrega un volume: - ~/.config/gcloud/application_default_credentials.json:/run/secrets/gcp-creds:ro
+#
+# Opción B: sin credenciales → la UI y los datos funcionan, el chat muestra error.
+# ──────────────────────────────────────────────────────────────────────────────
+
 services:
   api:
     build:
@@ -9,30 +18,29 @@ services:
       - "8080:8080"
     environment:
       - APP_ENV=local
-      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT:-}
       - GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION:-us-central1}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
       - EMBEDDING_MODEL=${EMBEDDING_MODEL:-gemini-embedding-001}
       - EMBEDDING_DIM=${EMBEDDING_DIM:-768}
-      - ALLOYDB_HOST=${ALLOYDB_HOST:-db}
-      - ALLOYDB_PORT=${ALLOYDB_PORT:-5432}
-      - ALLOYDB_DATABASE=${ALLOYDB_DATABASE:-fraudia}
-      - ALLOYDB_USER=${ALLOYDB_USER:-app_user}
+      - ALLOYDB_HOST=db
+      - ALLOYDB_PORT=5432
+      - ALLOYDB_DATABASE=fraudia
+      - ALLOYDB_USER=app_user
       - ALLOYDB_PASSWORD=${ALLOYDB_PASSWORD:-app_user_pass}
-      - CORS_ORIGINS=http://localhost:3000,http://web:3000
-      - GCS_BUCKET=${GCS_BUCKET:-}
+      - CORS_ORIGINS=http://localhost:3000
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: unless-stopped
-    volumes:
-      - ./apps/api/app:/app/app
 
   web:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
       args:
-        - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+        # URL interna Docker — el rewrite de Next.js corre server-side
+        - NEXT_PUBLIC_API_BASE_URL=http://api:8080
     ports:
       - "3000:8080"
     depends_on:
@@ -40,20 +48,50 @@ services:
     restart: unless-stopped
 
   db:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     environment:
       POSTGRES_DB: fraudia
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres_dev_pass
+      ALLOYDB_PASSWORD: ${ALLOYDB_PASSWORD:-app_user_pass}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./infra/docker/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+      - ./infra/sql:/docker-entrypoint-initdb.d/sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d fraudia"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  # Carga los CSVs una sola vez (se detiene al terminar)
+  loader:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      - ALLOYDB_HOST=db
+      - ALLOYDB_PORT=5432
+      - ALLOYDB_DATABASE=fraudia
+      - ALLOYDB_USER=app_user
+      - ALLOYDB_PASSWORD=${ALLOYDB_PASSWORD:-app_user_pass}
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT:-}
+      - GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION:-us-central1}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-gemini-embedding-001}
+      - EMBEDDING_DIM=${EMBEDDING_DIM:-768}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        python scripts/load_csv_to_alloydb.py &&
+        echo 'CSVs loaded.' &&
+        (python scripts/ingest_business_docs.py || echo 'RAG skipped: no GCP creds')
+      "
+    profiles:
+      - load
 
 volumes:
   pgdata:

@@ -1,0 +1,14 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - build
+      - -f
+      - apps/web/Dockerfile
+      - --build-arg
+      - NEXT_PUBLIC_API_BASE_URL=https://fraudia-api-484146602083.us-central1.run.app
+      - -t
+      - us-central1-docker.pkg.dev/$PROJECT_ID/fraudia/fraudia-web:latest
+      - .
+images:
+  - us-central1-docker.pkg.dev/$PROJECT_ID/fraudia/fraudia-web:latest
+timeout: 1200s

@@ -1,7 +1,8 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional
 from .core.config import get_settings
@@ -47,6 +48,15 @@ app.include_router(providers_router)
 app.include_router(documents_router)
 app.include_router(rag_router)
 app.include_router(admin_router)
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled error on {request.url}: {exc}")
+    return JSONResponse(
+        status_code=503,
+        content={"error": "Base de datos no disponible. Configura AlloyDB para ver datos reales.", "detail": str(exc)[:200]},
+    )
 
 
 @app.get("/health")

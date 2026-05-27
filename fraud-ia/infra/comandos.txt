@@ -1,0 +1,432 @@
+    1  git clone https://github.com/KernyMC/AI-Projects.git
+    2  claude install
+    3  irm https://claude.ai/install.ps1 | iex
+    4  curl -fsSL https://claude.ai/install.cmd -o install.cmd && install.cmd && del install.cmd
+    5  curl -fsSL https://claude.ai | bash
+    6  curl -fsSL https://claude.ai | sudo bash
+    7  npm install -g @anthropic-ai/claude-code
+    8  claude
+    9  cd task-manager-agent
+   10  python -m venv .venv
+   11  source .venv/bin/activate
+   12  pip install -r requirements.txt
+   13  cat > /home/kernyvpa/AI-Projects/task-manager-agent/task-manager-agent/task_manager/.env << 'EOF'
+   14  GOOGLE_API_KEY=AIzaSyAcnrVul35alLft_XWci8QuCr7s55KVXug
+   15  GOOGLE_GENAI_USE_VERTEXAI=FALSE
+   16  EOF
+   17  cat > /home/kernyvpa/AI-Projects/task-manager-agent/task-manager-agent/task_manager/.env << 'EOF'
+   18  GOOGLE_API_KEY=AIzaSyAcnrVul35alLft_XWci8QuCr7s55KVXug
+   19  GOOGLE_GENAI_USE_VERTEXAI=FALSE
+   20  DB_HOST=127.0.0.1
+   21  DB_PORT=5432
+   22  DB_USER=postgres
+   23  DB_PASSWORD=TaskManager2025!
+   24  DB_NAME=taskmanager
+   25  EOF
+   26  cd /home/kernyvpa/AI-Projects/task-manager-agent/task-manager-agent
+   27  .venv/bin/python task_manager/init_db.py
+   28  .venv/bin/adk web
+   29  .venv/bin/python task_manager/init_db.py
+   30  cd /home/kernyvpa/AI-Projects/task-manager-agent/task-manager-agent
+   31  .venv/bin/python task_manager/init_db.py
+   32  .venv/bin/python task_manager/frontend.py
+   33  cd ~/AI-Projects/task-manager-agent/task-manager-agent
+   34  .venv/bin/adk web
+   35  cd ~/AI-Projects/task-manager-agent
+   36  ../task-manager-agent/.venv/bin/python frontend.py
+   37  cd ~/AI-Projects/task-manager-agent
+   38  ../task-manager-agent/.venv/bin/python frontend.py
+   39  cd task-manager-agent/
+   40  ../task-manager-agent/.venv/bin/python frontend.py
+   41  cd ~/AI-Projects/task-manager-agent
+   42  ./task-manager-agent/.venv/bin/python frontend.py
+   43  task-manager-agent/.venv/bin/python frontend.py
+   44  sed -i 's/GOOGLE_GENAI_USE_VERTEXAI=FALSE/GOOGLE_GENAI_USE_VERTEXAI=TRUE/' /home/kernyvpa/AI-Projects/task-manager-agent/task-manager-agent/task_manager/.env
+   45  cat /home/kernyvpa/AI-Projects/task-manager-agent/task-manager-agent/task_manager/.env
+   46  cd ~/AI-Projects/task-manager-agent/task-manager-agent
+   47  .venv/bin/adk web
+   48  gcloud auth application-default login
+   49  gcloud config set project gen-ai-hackathon-494720
+   50  gcloud auth application-default set-quota-project gen-ai-hackathon-494720
+   51  cat >> /home/kernyvpa/AI-Projects/task-manager-agent/task-manager-agent/task_manager/.env << 'EOF'
+   52  GOOGLE_GENAI_USE_VERTEXAI=TRUE
+   53  GOOGLE_CLOUD_PROJECT=gen-ai-hackathon-494720
+   54  GOOGLE_CLOUD_LOCATION=us-central1
+   55  EOF
+   56  cat > /home/kernyvpa/AI-Projects/task-manager-agent/task-manager-agent/task_manager/.env << 'EOF'
+   57  GOOGLE_GENAI_USE_VERTEXAI=TRUE
+   58  GOOGLE_CLOUD_PROJECT=gen-ai-hackathon-494720
+   59  GOOGLE_CLOUD_LOCATION=us-central1
+   60  DB_HOST=127.0.0.1
+   61  DB_PORT=5432
+   62  DB_USER=postgres
+   63  DB_PASSWORD=TaskManager2025!
+   64  DB_NAME=taskmanager
+   65  EOF
+   66  gcloud auth application-default print-access-token
+   67  gcloud auth application-default set-quota-project gen-ai-hackathon-494720
+   68  gcloud services enable aiplatform.googleapis.com
+   69  adk web
+   70  task-manager-agent/.venv/bin/python frontend.py
+   71  cat /home/kernyvpa/AI-Projects/task-manager-agent/task-manager-agent/task_manager/.env
+   72  frontend.pu
+   73  frontend.py
+   74  cd ~/AI-Projects/task-manager-agent
+   75  ./task-manager-agent/.venv/bin/python frontend.py
+   76  ls
+   77  claude
+   78  gcloud services enable sqladmin.googleapis.com --project=gen-ai-hackathon-494720
+   79  gcloud sql instances create taskmanager-db   --database-version=POSTGRES_16   --tier=db-f1-micro   --region=us-central1   --storage-size=10GB   --project=gen-ai-hackathon-494720
+   80  gcloud sql databases create taskmanager   --instance=taskmanager-db   --project=gen-ai-hackathon-494720
+   81  gcloud sql users set-password postgres   --instance=taskmanager-db   --password=TaskManager2025!   --project=gen-ai-hackathon-494720
+   82  gcloud sql instances create taskmanager-db   --database-version=POSTGRES_16   --tier=db-f1-micro   --edition=ENTERPRISE   --region=us-central1   --storage-size=10GB   --project=gen-ai-hackathon-494720
+   83  gcloud billing projects describe gen-ai-hackathon-494720
+   84  gcloud sql instances create taskmanager-db   --database-version=POSTGRES_14   --tier=db-f1-micro   --region=us-central1   --storage-size=10GB   --project=gen-ai-hackathon-494720
+   85  gcloud sql databases create taskmanager   --instance=taskmanager-db   --project=gen-ai-hackathon-494720
+   86  gcloud sql users set-password postgres   --instance=taskmanager-db   --password=TaskManager2025!   --project=gen-ai-hackathon-494720
+   87  gcloud sql instances describe taskmanager-db   --project=gen-ai-hackathon-494720   --format="value(state)"
+   88  gcloud sql instances delete taskmanager-db   --project=gen-ai-hackathon-494720   --quiet
+   89  gcloud sql instances create taskmanager-db   --database-version=POSTGRES_14   --tier=db-f1-micro   --region=us-central1   --storage-size=10GB   --project=gen-ai-hackathon-494720
+   90  gcloud sql instances describe taskmanager-db   --project=gen-ai-hackathon-494720   --format="value(state)"
+   91  gcloud sql databases create taskmanager   --instance=taskmanager-db   --project=gen-ai-hackathon-494720
+   92  gcloud sql users set-password postgres   --instance=taskmanager-db   --password=TaskManager2025!   --project=gen-ai-hackathon-494720
+   93  cd ~/AI-Projects/task-manager-agent
+   94  bash deploy.sh
+   95  docker push us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent
+   96  cd ~/AI-Projects/task-manager-agent && bash deploy.sh
+   97  cp ~/AI-Projects/task-manager-agent/frontend.py    ~/AI-Projects/task-manager-agent/task-manager-agent/frontend.py
+   98  gcloud services enable cloudbuild.googleapis.com   --project=gen-ai-hackathon-494720
+   99  cd ~/AI-Projects/task-manager-agent/task-manager-agent
+  100  gcloud builds submit   --tag us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --project=gen-ai-hackathon-494720
+  101  cd ~/AI-Projects/task-manager-agent/task-manager-agent
+  102  gcloud builds submit   --tag us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --project=gen-ai-hackathon-494720
+  103  gcloud projects add-iam-policy-binding gen-ai-hackathon-494720   --member="serviceAccount:484146602083@cloudbuild.gserviceaccount.com"   --role="roles/storage.admin"
+  104  gcloud projects add-iam-policy-binding gen-ai-hackathon-494720   --member="serviceAccount:484146602083-compute@developer.gserviceaccount.com"   --role="roles/storage.objectViewer"
+  105  cat > ~/AI-Projects/task-manager-agent/task-manager-agent/.gcloudignore << 'EOF'
+  106  .git
+  107  __pycache__
+  108  *.pyc
+  109  *.pyo
+  110  .env
+  111  venv/
+  112  .venv/
+  113  node_modules/
+  114  *.log
+  115  EOF
+  116  gcloud builds submit   --tag us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --project=gen-ai-hackathon-494720
+  117  gcloud projects add-iam-policy-binding gen-ai-hackathon-494720   --member="serviceAccount:484146602083-compute@developer.gserviceaccount.com"   --role="roles/artifactregistry.writer"
+  118  gcloud projects add-iam-policy-binding gen-ai-hackathon-494720   --member="serviceAccount:484146602083-compute@developer.gserviceaccount.com"   --role="roles/logging.logWriter"
+  119  gcloud builds submit   --tag us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --project=gen-ai-hackathon-494720
+  120  gcloud run deploy task-manager-agent   --image=us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --region=us-central1   --platform=managed   --allow-unauthenticated   --add-cloudsql-instances=gen-ai-hackathon-494720:us-central1:taskmanager-db   --memory=2Gi   --cpu=2   --min-instances=1   --max-instances=3   --timeout=300   --port=8080   --project=gen-ai-hackathon-494720
+  121  gcloud sql instances describe taskmanager-db   --project=gen-ai-hackathon-494720   --format="value(state)"
+  122  set +H
+  123  gcloud run deploy task-manager-agent   --image=us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --region=us-central1   --platform=managed   --allow-unauthenticated   --add-cloudsql-instances=gen-ai-hackathon-494720:us-central1:taskmanager-db   --set-env-vars='GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=gen-ai-hackathon-494720,GOOGLE_CLOUD_LOCATION=us-central1,DB_HOST=/cloudsql/gen-ai-hackathon-494720:us-central1:taskmanager-db,DB_PORT=5432,DB_USER=postgres,DB_PASSWORD=TaskManager2025!,DB_NAME=taskmanager'   --memory=2Gi   --cpu=2   --min-instances=1   --max-instances=3   --timeout=300   --port=8080   --project=gen-ai-hackathon-494720
+  124  gcloud logging read   'resource.type="cloud_run_revision" AND resource.labels.service_name="task-manager-agent"'   --project=gen-ai-hackathon-494720   --limit=50   --format="value(textPayload)"   --freshness=5m
+  125  gcloud projects add-iam-policy-binding gen-ai-hackathon-494720   --member="serviceAccount:484146602083-compute@developer.gserviceaccount.com"   --role="roles/cloudsql.client"
+  126  gcloud sql databases create taskmanager   --instance=taskmanager-db   --project=gen-ai-hackathon-494720
+  127  gcloud sql users set-password postgres   --instance=taskmanager-db   --password=TaskManager2025!   --project=gen-ai-hackathon-494720
+  128  set +H
+  129  gcloud run deploy task-manager-agent   --image=us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --region=us-central1   --platform=managed   --allow-unauthenticated   --add-cloudsql-instances=gen-ai-hackathon-494720:us-central1:taskmanager-db   --set-env-vars='GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=gen-ai-hackathon-494720,GOOGLE_CLOUD_LOCATION=us-central1,DB_HOST=/cloudsql/gen-ai-hackathon-494720:us-central1:taskmanager-db,DB_PORT=5432,DB_USER=postgres,DB_PASSWORD=TaskManager2025!,DB_NAME=taskmanager'   --memory=2Gi --cpu=2 --min-instances=1 --max-instances=3   --timeout=300 --port=8080   --project=gen-ai-hackathon-494720
+  130  gcloud logging read   'resource.type="cloud_run_revision" AND resource.labels.service_name="task-manager-agent"'   --project=gen-ai-hackathon-494720   --limit=30   --format="value(textPayload)"   --freshness=10m
+  131  gcloud projects add-iam-policy-binding gen-ai-hackathon-494720   --member="serviceAccount:484146602083-compute@developer.gserviceaccount.com"   --role="roles/aiplatform.user"
+  132  gcloud run services update-traffic task-manager-agent   --to-latest   --region=us-central1   --project=gen-ai-hackathon-494720
+  133  cp ~/AI-Projects/task-manager-agent/frontend.py    ~/AI-Projects/task-manager-agent/task-manager-agent/frontend.py
+  134  cd ~/AI-Projects/task-manager-agent/task-manager-agent
+  135  gcloud builds submit   --tag us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --project=gen-ai-hackathon-494720
+  136  set +H
+  137  gcloud run deploy task-manager-agent   --image=us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --region=us-central1   --platform=managed   --allow-unauthenticated   --add-cloudsql-instances=gen-ai-hackathon-494720:us-central1:taskmanager-db   --set-env-vars='GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=gen-ai-hackathon-494720,GOOGLE_CLOUD_LOCATION=us-central1,DB_HOST=/cloudsql/gen-ai-hackathon-494720:us-central1:taskmanager-db,DB_PORT=5432,DB_USER=postgres,DB_PASSWORD=TaskManager2025!,DB_NAME=taskmanager'   --memory=2Gi --cpu=2 --min-instances=1 --max-instances=3   --timeout=300 --port=8080   --project=gen-ai-hackathon-494720
+  138  gcloud logging read   'resource.type="cloud_run_revision" AND resource.labels.service_name="task-manager-agent"'   --project=gen-ai-hackathon-494720   --limit=80   --format="value(textPayload)"   --freshness=15m 2>&1 | grep -v "^$" | head -60
+  139  cp ~/AI-Projects/task-manager-agent/frontend.py   ~/AI-Projects/task-manager-agent/task-manager-agent/frontend.py
+  140  cd ~/AI-Projects/task-manager-agent/task-manager-agent
+  141  gcloud builds submit   --tag us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --project=gen-ai-hackathon-494720
+  142  set +H
+  143  gcloud run deploy task-manager-agent   --image=us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --region=us-central1   --platform=managed   --allow-unauthenticated   --add-cloudsql-instances=gen-ai-hackathon-494720:us-central1:taskmanager-db   --set-env-vars='GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=gen-ai-hackathon-494720,GOOGLE_CLOUD_LOCATION=us-central1,DB_HOST=/cloudsql/gen-ai-hackathon-494720:us-central1:taskmanager-db,DB_PORT=5432,DB_USER=postgres,DB_PASSWORD=TaskManager2025!,DB_NAME=taskmanager'   --memory=2Gi --cpu=2 --min-instances=1 --max-instances=3   --timeout=300 --port=8080   --project=gen-ai-hackathon-494720
+  144  claude --dangerously-skip-permissions
+  145  claude
+  146  claude
+  147  npm install -g @anthropic-ai/claude-code
+  148  claude --dangerously-skip-permiossions
+  149  cp ~/AI-Projects/task-manager-agent/frontend.py   ~/AI-Projects/task-manager-agent/task-manager-agent/frontend.py
+  150  cd ~/AI-Projects/task-manager-agent/task-manager-agent
+  151  gcloud builds submit   --tag us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --project=gen-ai-hackathon-494720
+  152  set +H
+  153  gcloud run deploy task-manager-agent   --image=us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --region=us-central1   --platform=managed   --allow-unauthenticated   --add-cloudsql-instances=gen-ai-hackathon-494720:us-central1:taskmanager-db   --set-env-vars='GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=gen-ai-hackathon-494720,GOOGLE_CLOUD_LOCATION=us-central1,DB_HOST=/cloudsql/gen-ai-hackathon-494720:us-central1:taskmanager-db,DB_PORT=5432,DB_USER=postgres,DB_PASSWORD=TaskManager2025!,DB_NAME=taskmanager'   --memory=2Gi --cpu=2 --min-instances=1 --max-instances=3   --timeout=300 --port=8080   --project=gen-ai-hackathon-494720
+  154  cd ~/AI-Projects/task-manager-agent
+  155  git push -u origin main --force
+  156  cd ~/AI-Projects/task-manager-agent
+  157  git push -u origin main --force
+  158  cd ~/AI-Projects/task-manager-agent
+  159  git push -u origin main --force
+  160  cd ~/AI-Projects/task-manager-agent/task-manager-agent
+  161  gcloud builds submit   --tag us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --project=gen-ai-hackathon-494720
+  162  set +H
+  163  gcloud run deploy task-manager-agent   --image=us-central1-docker.pkg.dev/gen-ai-hackathon-494720/task-manager/task-manager-agent   --region=us-central1   --platform=managed   --allow-unauthenticated   --add-cloudsql-instances=gen-ai-hackathon-494720:us-central1:taskmanager-db   --set-env-vars='GOOGLE_GENAI_USE_VERTEXAI=TRUE,GOOGLE_CLOUD_PROJECT=gen-ai-hackathon-494720,GOOGLE_CLOUD_LOCATION=us-central1,DB_HOST=/cloudsql/gen-ai-hackathon-494720:us-central1:taskmanager-db,DB_PORT=5432,DB_USER=postgres,DB_PASSWORD=TaskManager2025!,DB_NAME=taskmanager'   --memory=2Gi --cpu=2 --min-instances=1 --max-instances=3   --timeout=300 --port=8080   --project=gen-ai-hackathon-494720
+  164  npm install -g @anthropic-ai/claude-code
+  165  gcloud projects list
+  166  for p in $(gcloud projects list --format="value(projectId)"); do   echo "==== $p ====";   gcloud run services list --project=$p --platform=managed; done
+  167  gcloud run services delete task-manager-agent --region=us-central1 --project=gen-ai-hackathon-494720
+  168  gcloud config set project gen-ai-hackathon-494720
+  169  git init
+  170  npm install -g @anthropic-ai/claude-code
+  171  ls
+  172  cd app
+  173  ls
+  174  ls -la
+  175  cd ..
+  176  ls -la
+  177  code .env
+  178  ls -la
+  179  git remote add origin https://github.com/KernyMC/Asistente-Copagos.git
+  180  git branch -M main
+  181  git push -u origin main
+  182  git status        # para ver que archivos están sin trackear
+  183  git add .         # agrega todo (o selecciona archivos específicos)
+  184  git commit -m "Initial commit"
+  185  git config --global user.name "KernyMC"
+  186  git config --global user.email "kalexandervargas@gmail.com"
+  187  git config --global user.name
+  188  git config --global user.email
+  189  git add .
+  190  git commit -m "Initial commit"
+  191  git push -u origin main
+  192  git add .
+  193  git commit "."
+  194  git commit "FIX: UI"
+  195  git add .
+  196  git commit -m "UI: FIX"
+  197  git push -u origin main
+  198  git pull
+  199  git add .gitignore
+  200  git commit -m "Ignore .env locally"
+  201  git rm --cached .env
+  202  git status
+  203  git pull
+  204  git commit -m "Remove .env from repo, keep locally"
+  205  git pull --no-rebase   # o la estrategia que definimos antes
+  206  git push origin main
+  207  claude --dangerously-skip-permissions
+  208  npm install -g @anthropic-ai/claude-code
+  209  ls -la
+  210  nano .env
+  211  ange to a different project.
+  212  kernyvpa@cloudshell:~ (gen-ai-hackathon-494720)$ 
+  213  gcloud projects list
+  214  for p in $(gcloud projects list --format="value(projectId)"); do   echo "==== $p ====";   gcloud compute instances list --project=$p;   gcloud run services list --project=$p --platform=managed --region=us-central1 2>/dev/null; done
+  215  y
+  216  gcloud run services delete estimador-copago-quito --region=us-central1
+  217  echo "# HackIAthon" >> README.md
+  218  git init
+  219  git add README.md
+  220  git commit -m "first commit"
+  221  git branch -M main
+  222  git remote add origin https://github.com/KernyMC/HackIAthon.git
+  223  git push -u origin main
+  224  ls -la
+  225  rm -rf .git
+  226  echo "# HackIAthon" >> README.md
+  227  git init
+  228  git add README.md
+  229  git commit -m "first commit"
+  230  git branch -M main
+  231  git remote add origin https://github.com/KernyMC/HackIAthon.git
+  232  git push -u origin main
+  233  git pull
+  234  claude --dangerously-skip-permissions
+  235  npm install -g @anthropic-ai/claude-code
+  236  git add .
+  237  git commit -m "Feat: front and back"
+  238  git push origin main
+  239  git branch
+  240  git add .
+  241  git commit -m "Feat: FRONT"
+  242  git push origin main
+  243  set PROJECT_ID=TU_PROJECT_ID
+  244  set REGION=us-central1
+  245  set NETWORK=fraudia-vpc
+  246  set SUBNET=fraudia-subnet
+  247  set CLUSTER_ID=fraudia-cluster
+  248  set INSTANCE_ID=fraudia-primary
+  249  set DB_NAME=fraudia
+  250  set REPO_NAME=fraudia
+  251  set API_SERVICE=fraudia-api
+  252  set WEB_SERVICE=fraudia-web
+  253  set API_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-api:latest
+  254  set WEB_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-web:latest
+  255  set MIGRATOR_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-db-migrator:latest
+  256  set LOADER_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-loader:latest
+  257  set RAG_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-rag-indexer:latest
+  258  set BUCKET_NAME=fraudia-hackathon-%PROJECT_ID%
+  259  gcloud auth login
+  260  gcloud auth application-default login
+  261  gcloud config set project %PROJECT_ID%
+  262  gcloud config set run/region %REGION%
+  263  gcloud auth login
+  264  gcloud auth application-default login
+  265  gcloud config set project %PROJECT_ID%
+  266  gcloud config set run/region %REGION%
+  267  set PROJECT_ID=gen-ai-hackathon-494720
+  268  set REGION=us-central1
+  269  set NETWORK=fraudia-vpc
+  270  set SUBNET=fraudia-subnet
+  271  set CLUSTER_ID=fraudia-cluster
+  272  set INSTANCE_ID=fraudia-primary
+  273  set DB_NAME=fraudia
+  274  set REPO_NAME=fraudia
+  275  set API_SERVICE=fraudia-api
+  276  set WEB_SERVICE=fraudia-web
+  277  set API_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-api:latest
+  278  set WEB_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-web:latest
+  279  set MIGRATOR_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-db-migrator:latest
+  280  set LOADER_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-loader:latest
+  281  set RAG_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-rag-indexer:latest
+  282  set BUCKET_NAME=fraudia-hackathon-%PROJECT_ID%
+  283  set PROJECT_ID=gen-ai-hackathon-494720
+  284  set REGION=us-central1
+  285  set NETWORK=fraudia-vpc
+  286  set SUBNET=fraudia-subnet
+  287  set CLUSTER_ID=fraudia-cluster
+  288  set INSTANCE_ID=fraudia-primary
+  289  set DB_NAME=fraudia
+  290  set REPO_NAME=fraudia
+  291  set API_SERVICE=fraudia-api
+  292  set WEB_SERVICE=fraudia-web
+  293  set API_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-api:latest
+  294  set WEB_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-web:latest
+  295  set MIGRATOR_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-db-migrator:latest
+  296  set LOADER_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-loader:latest
+  297  set RAG_IMAGE=%REGION%-docker.pkg.dev/%PROJECT_ID%/%REPO_NAME%/fraudia-rag-indexer:latest
+  298  set BUCKET_NAME=fraudia-hackathon-%PROJECT_ID%
+  299  gcloud auth login
+  300  gcloud auth application-default login
+  301  gcloud config set project %PROJECT_ID%
+  302  gcloud config set run/region %REGION%
+  303  gcloud config set project gen-ai-hackathon-494720
+  304  gcloud auth login
+  305  gcloud auth application-default login
+  306  gcloud config set project %PROJECT_ID%
+  307  gcloud config set run/region %REGION%
+  308  gcloud auth login
+  309  gcloud auth application-default login
+  310  gcloud config set project gen-ai-hackathon-494720
+  311  gcloud config set run/region us-central1
+  312  gcloud services enable alloydb.googleapis.com
+  313  gcloud services enable aiplatform.googleapis.com
+  314  gcloud services enable run.googleapis.com
+  315  gcloud services enable artifactregistry.googleapis.com
+  316  gcloud services enable cloudbuild.googleapis.com
+  317  gcloud services enable secretmanager.googleapis.com
+  318  gcloud services enable compute.googleapis.com
+  319  gcloud services enable servicenetworking.googleapis.com
+  320  gcloud services enable storage.googleapis.com
+  321  gcloud artifacts repositories create %REPO_NAME% ^
+  322  gcloud artifacts repositories create $REPO_NAME   --repository-format=docker   --location=$REGION   --description="FraudIA containers"
+  323  echo $REPO_NAME
+  324  echo $REGION
+  325  export REPO_NAME=fraudia
+  326  export REGION=us-central1
+  327  gcloud artifacts repositories create $REPO_NAME   --repository-format=docker   --location=$REGION   --description="FraudIA containers"
+  328  gcloud compute networks create %NETWORK% ^
+  329  export NETWORK=fraudia-vpc
+  330  gcloud compute networks create $NETWORK   --subnet-mode=custom
+  331  export SUBNET=fraudia-subnet
+  332  gcloud compute networks subnets create $SUBNET   --network=$NETWORK   --region=$REGION   --range=10.10.0.0/24
+  333  gcloud compute addresses create google-managed-services-fraudia   --global   --purpose=VPC_PEERING   --prefix-length=16   --network=$NETWORK
+  334  gcloud services vpc-peerings connect   --service=servicenetworking.googleapis.com   --ranges=google-managed-services-fraudia   --network=$NETWORK   --project=$PROJECT_ID
+  335  export PROJECT_ID=gen-ai-hackathon-494720
+  336  gcloud config set project $PROJECT_ID
+  337  gcloud services vpc-peerings connect   --service=servicenetworking.googleapis.com   --ranges=google-managed-services-fraudia   --network=$NETWORK   --project=$PROJECT_ID
+  338  export POSTGRES_PASSWORD=admin
+  339  export CLUSTER_ID=fraudia-cluster
+  340  export NETWORK=fraudia-vpc
+  341  gcloud alloydb clusters create $CLUSTER_ID   --database-version=POSTGRES_16   --password=$POSTGRES_PASSWORD   --region=$REGION   --project=$PROJECT_ID   --network=projects/$PROJECT_ID/global/networks/$NETWORK
+  342  export ALLOYDB_HOST=$(cat alloydb_ip.txt)
+  343  gcloud alloydb instances describe $INSTANCE_ID   --cluster=$CLUSTER_ID   --region=$REGION   --format="value(ipAddress)" > alloydb_ip.txt
+  344  export INSTANCE_ID=fraudia-primary
+  345  export CLUSTER_ID=fraudia-cluster
+  346  export REGION=us-central1
+  347  gcloud alloydb instances describe $INSTANCE_ID   --cluster=$CLUSTER_ID   --region=$REGION   --format="value(ipAddress)" > alloydb_ip.txt
+  348  gcloud alloydb instances list   --cluster=$CLUSTER_ID   --region=$REGION
+  349  gcloud alloydb instances create fraudia-primary   --cluster=$CLUSTER_ID   --instance-type=PRIMARY   --cpu-count=2   --region=$REGION
+  350  gcloud alloydb instances describe $INSTANCE_ID   --cluster=$CLUSTER_ID   --region=$REGION   --format="value(ipAddress)" > alloydb_ip.txt
+  351  export ALLOYDB_HOST=$(cat alloydb_ip.txt)
+  352  echo "AlloyDB private IP: $ALLOYDB_HOST"
+  353  export APP_DB_PASSWORD=admin
+  354  export LOADER_DB_PASSWORD=admin
+  355  echo %POSTGRES_PASSWORD%> postgres_password.txt
+  356  gcloud secrets create fraudia-postgres-password --data-file=postgres_password.txt
+  357  del postgres_password.txt
+  358  export POSTGRES_PASSWORD=admin
+  359  echo %POSTGRES_PASSWORD%> postgres_password.txt
+  360  gcloud secrets create fraudia-postgres-password --data-file=postgres_password.txt
+  361  del postgres_password.txt
+  362  echo %APP_DB_PASSWORD%> app_db_password.txt
+  363  gcloud secrets create fraudia-app-db-password --data-file=app_db_password.txt
+  364  del app_db_password.txt
+  365  echo %LOADER_DB_PASSWORD%> loader_db_password.txt
+  366  gcloud secrets create fraudia-loader-db-password --data-file=loader_db_password.txt
+  367  del loader_db_password.txt
+  368  gcloud iam service-accounts create fraudia-api-sa   --display-name="FraudIA API Service Account"
+  369  gcloud projects add-iam-policy-binding $PROJECT_ID   --member="serviceAccount:fraudia-api-sa@$PROJECT_ID.iam.gserviceaccount.com"   --role="roles/aiplatform.user"
+  370  gcloud iam service-accounts list
+  371  gcloud projects add-iam-policy-binding $PROJECT_ID   --member="serviceAccount:fraudia-api-sa@$PROJECT_ID.iam.gserviceaccount.com"   --role="roles/aiplatform.user"
+  372  gcloud projects add-iam-policy-binding $PROJECT_ID   --member="serviceAccount:fraudia-api-sa@$PROJECT_ID.iam.gserviceaccount.com"   --role="roles/alloydb.client"
+  373  gcloud projects add-iam-policy-binding $PROJECT_ID   --member="serviceAccount:fraudia-api-sa@$PROJECT_ID.iam.gserviceaccount.com"   --role="roles/secretmanager.secretAccessor"
+  374  gcloud projects add-iam-policy-binding $PROJECT_ID   --member="serviceAccount:fraudia-api-sa@$PROJECT_ID.iam.gserviceaccount.com"   --role="roles/storage.objectViewer"
+  375  gcloud storage buckets create gs://$BUCKET_NAME   --location=$REGION
+  376  export BUCKET_NAME=fraudia-hackathon-$PROJECT_ID
+  377  echo $BUCKET_NAME
+  378  gcloud storage buckets create gs://$BUCKET_NAME   --location=$REGION
+  379  gcloud storage cp data/synthetic/*.csv   gs://$BUCKET_NAME/data/synthetic/
+  380  gcloud storage cp docs/business_kb/*.md   gs://$BUCKET_NAME/docs/business_kb/
+  381  export DB_NAME=fraudia
+  382  export SUBNET=fraudia-subnet
+  383  export MIGRATOR_IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/fraudia-db-migrator:latest
+  384  gcloud builds submit .   --config infra/migrator/cloudbuild.yaml   --substitutions=_IMAGE=$MIGRATOR_IMAGE
+  385  ls
+  386  find . -name "cloudbuild.yaml"
+  387  ls tree
+  388  tree
+  389  mkdir infra\migrator
+  390  notepad infra\migrator\Dockerfile
+  391  export PROJECT_ID=gen-ai-hackathon-494720
+  392  export REGION=us-central1
+  393  export NETWORK=fraudia-vpc
+  394  export SUBNET=fraudia-subnet
+  395  export CLUSTER_ID=fraudia-cluster
+  396  export INSTANCE_ID=fraudia-primary
+  397  export DB_NAME=fraudia
+  398  export REPO_NAME=fraudia
+  399  export MIGRATOR_JOB=fraudia-bootstrap-db
+  400  export MIGRATOR_IMAGE=$REGION-docker.pkg.dev/$PROJECT_ID/$REPO_NAME/fraudia-db-migrator:latest
+  401  gcloud secrets list
+  402  gcloud iam service-accounts list
+  403  gcloud builds submit .   --config infra/migrator/cloudbuild.yaml   --substitutions=_IMAGE=$MIGRATOR_IMAGE
+  404  gcloud builds submit .   --config infra/migrator/cloudbuild.yaml   --substitutions=_IMAGE=$MIGRATOR_IMAGE
+  405  cd ..
+  406  ls
+  407  gcloud builds submit .   --config infra/migrator/cloudbuild.yaml   --substitutions=_IMAGE=$MIGRATOR_IMAGE
+  408  ls
+  409  gcloud builds submit ..   --config migrator/cloudbuild.yaml   --substitutions=_IMAGE=$MIGRATOR_IMAGE
+  410  gcloud run jobs create $MIGRATOR_JOB   --image=$MIGRATOR_IMAGE   --region=$REGION   --network=$NETWORK   --subnet=$SUBNET   --vpc-egress=private-ranges-only   --service-account=fraudia-api-sa@$PROJECT_ID.iam.gserviceaccount.com   --set-env-vars=ALLOYDB_HOST=$ALLOYDB_HOST,ALLOYDB_PORT=5432,ALLOYDB_DATABASE=$DB_NAME,ALLOYDB_ADMIN_USER=postgres   --set-secrets=ALLOYDB_ADMIN_PASSWORD=fraudia-postgres-password:latest,APP_DB_PASSWORD=fraudia-app-db-password:latest,LOADER_DB_PASSWORD=fraudia-loader-db-password:latest
+  411  gcloud run jobs update $MIGRATOR_JOB   --image=$MIGRATOR_IMAGE   --region=$REGION   --network=$NETWORK   --subnet=$SUBNET   --vpc-egress=private-ranges-only   --service-account=fraudia-api-sa@$PROJECT_ID.iam.gserviceaccount.com   --set-env-vars=ALLOYDB_HOST=$ALLOYDB_HOST,ALLOYDB_PORT=5432,ALLOYDB_DATABASE=$DB_NAME,ALLOYDB_ADMIN_USER=postgres   --set-secrets=ALLOYDB_ADMIN_PASSWORD=fraudia-postgres-password:latest,APP_DB_PASSWORD=fraudia-app-db-password:latest,LOADER_DB_PASSWORD=fraudia-loader-db-password:latest
+  412  gcloud run jobs execute $MIGRATOR_JOB   --region=$REGION   --wait
+  413  gcloud run jobs executions describe fraudia-bootstrap-db-8cr75   --region=$REGION
+  414  gcloud logging read "resource.type=cloud_run_job AND resource.labels.job_name=$MIGRATOR_JOB"   --limit=50   --format="value(textPayload)"
+  415  export ALLOYDB_HOST=10.108.0.2
+  416  gcloud alloydb instances describe $INSTANCE_ID   --cluster=$CLUSTER_ID   --region=$REGION   --format="value(ipAddress)"
+  417  gcloud run jobs update $MIGRATOR_JOB   --image=$MIGRATOR_IMAGE   --region=$REGION   --network=$NETWORK   --subnet=$SUBNET   --vpc-egress=private-ranges-only   --service-account=fraudia-api-sa@$PROJECT_ID.iam.gserviceaccount.com   --set-env-vars=ALLOYDB_HOST=$ALLOYDB_HOST,ALLOYDB_PORT=5432,ALLOYDB_DATABASE=$DB_NAME,ALLOYDB_ADMIN_USER=postgres   --set-secrets=ALLOYDB_ADMIN_PASSWORD=fraudia-postgres-password:latest,APP_DB_PASSWORD=fraudia-app-db-password:latest,LOADER_DB_PASSWORD=fraudia-loader-db-password:latest
+  418  gcloud run jobs execute $MIGRATOR_JOB   --region=$REGION   --wait
+  419  gcloud logging read "resource.type=cloud_run_job AND resource.labels.job_name=$MIGRATOR_JOB"   --limit=20   --format="value(textPayload)"
+  420  gcloud run jobs executions describe fraudia-bootstrap-db-9rxjx   --region=$REGION
+  421  echo -n "$POSTGRES_PASSWORD" | gcloud secrets versions add fraudia-postgres-password   --data-file=-
+  422  echo -n "$POSTGRES_PASSWORD"
+  423  export POSTGRES_PASSWORD=admin
+  424  echo $POSTGRES_PASSWORD
+  425  echo -n "$POSTGRES_PASSWORD" | gcloud secrets versions add fraudia-postgres-password   --data-file=-
+  426  gcloud run jobs execute $MIGRATOR_JOB   --region=$REGION   --wait
+  427  gcloud logging read "resource.type=cloud_run_job AND resource.labels.job_name=%MIGRATOR_JOB%" ^
+  428  gcloud logging read "resource.type=cloud_run_job AND resource.labels.job_name=$MIGRATOR_JOB"   --limit=100   --format="value(textPayload)"
+  429  curl -o alloydb-auth-proxy https://storage.googleapis.com/alloydb-auth-proxy/v1.11.0/alloydb-auth-proxy.linux.amd64
+  430  chmod +x alloydb-auth-proxy
+  431  ./alloydb-auth-proxy   projects/$PROJECT_ID/locations/$REGION/clusters/$CLUSTER_ID/instances/$INSTANCE_ID   --port 5432 &
+  432  history > comandos.txt

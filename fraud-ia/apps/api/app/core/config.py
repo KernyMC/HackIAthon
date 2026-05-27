@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from urllib.parse import quote_plus
 
 
 class Settings(BaseSettings):
@@ -37,7 +38,7 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         return (
-            f"postgresql+psycopg://{self.alloydb_user}:{self.alloydb_password}"
+            f"postgresql+psycopg://{quote_plus(self.alloydb_user)}:{quote_plus(self.alloydb_password)}"
             f"@{self.alloydb_host}:{self.alloydb_port}/{self.alloydb_database}"
         )
 

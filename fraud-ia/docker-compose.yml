@@ -1,0 +1,59 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_ENV=local
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
+      - GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION:-us-central1}
+      - GEMINI_MODEL=${GEMINI_MODEL:-gemini-2.5-flash}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-gemini-embedding-001}
+      - EMBEDDING_DIM=${EMBEDDING_DIM:-768}
+      - ALLOYDB_HOST=${ALLOYDB_HOST:-db}
+      - ALLOYDB_PORT=${ALLOYDB_PORT:-5432}
+      - ALLOYDB_DATABASE=${ALLOYDB_DATABASE:-fraudia}
+      - ALLOYDB_USER=${ALLOYDB_USER:-app_user}
+      - ALLOYDB_PASSWORD=${ALLOYDB_PASSWORD:-app_user_pass}
+      - CORS_ORIGINS=http://localhost:3000,http://web:3000
+      - GCS_BUCKET=${GCS_BUCKET:-}
+    depends_on:
+      - db
+    restart: unless-stopped
+    volumes:
+      - ./apps/api/app:/app/app
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+    ports:
+      - "3000:8080"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: fraudia
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_dev_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

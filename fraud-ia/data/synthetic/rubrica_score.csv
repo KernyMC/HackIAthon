@@ -1,0 +1,29 @@
+codigo,senal,puntos_maximos,tipo
+RF-S01,Borde de vigencia inicio <= 10 dias,8,Regla ponderada
+RF-S02,Borde de vigencia inicio 11 a 30 dias,4,Regla ponderada
+RF-S03,Borde de vigencia fin <= 10 dias,8,Regla ponderada
+RF-S04,Borde de vigencia fin 11 a 30 dias,4,Regla ponderada
+RF-S05,Demora denuncia por robo > 48 horas,8,Regla ponderada
+RF-S06,Demora denuncia por robo 24 a 48 horas,4,Regla ponderada
+RF-S07,Alta frecuencia asegurado >= 3 siniestros 18m,8,Regla ponderada
+RF-S08,Alta frecuencia vehiculo >= 3 siniestros 18m,6,Regla ponderada
+RF-S09,Alta frecuencia conductor >= 3 siniestros 18m,8,Regla ponderada
+RF-S10,Alta frecuencia reclamos solo RC > 2,6,Regla ponderada
+RF-S11,Proveedor en lista restrictiva,10,Regla ponderada
+RF-S12,Proveedor recurrente en casos observados,5,Regla ponderada
+RF-S13,Documento legal obligatorio faltante,4,Regla ponderada
+RF-S14,Dinamica sospechosa o relato ilogico,6,Regla ponderada
+RF-S15,Evento sin tercero y sin camaras,5,Regla ponderada
+RF-S16,Documentos inconsistentes,10,Regla ponderada
+RF-S17,Reporte tardio > 7 dias,5,Regla ponderada
+RF-S18,Reporte tardio 4 a 7 dias,3,Regla ponderada
+RF-S19,Narrativa similar > 85%,8,Regla ponderada
+RF-S20,Narrativa similar 70% a 84%,4,Regla ponderada
+RF-S21,Monto reclamado cercano a suma asegurada,5,Regla ponderada
+RF-01,Cobertura Perdida Total por Robo,,Regla critica sugerida
+RF-02,Evidencia de falsificacion o adulteracion documental evidente,,Regla critica sugerida
+RF-03,"Asegurado, beneficiario o proveedor coincide con lista restrictiva",,Regla critica sugerida
+RF-04,Dinamica del accidente fisicamente imposible,,Regla critica sugerida
+RF-05,Siniestro extremo al borde de vigencia menor a 48 horas,,Regla critica sugerida
+RF-06,Demora atipica en denuncia de robo mayor a 4 dias,,Regla critica sugerida
+RF-07,Narrativa clonada,,Regla critica sugerida

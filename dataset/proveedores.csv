@@ -1,0 +1,61 @@
+id_proveedor,nombre_proveedor,tipo,ciudad,reclamos_asociados,monto_promedio_reclamado,porcentaje_casos_observados,en_lista_restrictiva,casos_observados_ultimo_anio,antiguedad_meses
+PROV-0001,Reparaciones Sur Guayaquil 01,Clinica,Guayaquil,17,3434,29.4,No,0,9
+PROV-0002,Centro Pericial Quito 02,Taller,Quito,22,6708,50.0,Si,0,100
+PROV-0003,Servicios Quito Machala 03,Vidrieria,Machala,9,453,33.3,No,1,91
+PROV-0004,Taller Ruta Segura Guayaquil 04,Vidrieria,Guayaquil,10,877,20.0,No,0,130
+PROV-0005,Peritajes Sierra Guayaquil 05,Perito,Guayaquil,19,7698,31.6,No,2,130
+PROV-0006,Mecanica Integral Quito 06,Perito,Quito,23,7155,8.7,No,0,144
+PROV-0007,Peritajes Sierra Cuenca 07,Proveedor de repuestos,Cuenca,24,6974,45.8,No,7,77
+PROV-0008,Peritajes Sierra Quito 08,Perito,Quito,19,5081,10.5,No,1,117
+PROV-0009,Diagnostico Automotriz Quito 09,Taller,Quito,23,12224,65.2,Si,2,91
+PROV-0010,Vidrios Seguros Guayaquil 10,Taller,Guayaquil,7,5821,14.3,No,0,99
+PROV-0011,Soluciones de Choque Quito 11,Taller,Quito,19,6883,42.1,No,9,94
+PROV-0012,Latoneria Pacifico Cuenca 12,Taller,Cuenca,21,4756,19.0,No,0,117
+PROV-0013,Peritajes Sierra Ambato 13,Taller,Ambato,18,7248,16.7,No,2,38
+PROV-0014,Centro Pericial Manta 14,Taller,Manta,13,5871,38.5,No,0,10
+PROV-0015,Reparaciones Sur Machala 15,Taller,Machala,9,9201,44.4,No,2,62
+PROV-0016,Vidrios Seguros Machala 16,Proveedor de repuestos,Machala,21,5842,66.7,Si,1,19
+PROV-0017,Vidrios Seguros Guayaquil 17,Taller,Guayaquil,16,7059,12.5,No,0,126
+PROV-0018,Taller La Pradera Loja 18,Clinica,Loja,16,2858,31.2,No,2,89
+PROV-0019,Taller Andino Santo Domingo 19,Proveedor de repuestos,Santo Domingo,21,6131,4.8,No,1,20
+PROV-0020,Clinica de Accidentes Quito 20,Clinica,Quito,19,3277,5.3,No,2,47
+PROV-0021,Pintura Express Cuenca 21,Perito,Cuenca,22,7374,31.8,No,0,40
+PROV-0022,Servicios Quito Loja 22,Taller,Loja,19,5395,42.1,No,2,7
+PROV-0023,Soluciones de Choque Guayaquil 23,Taller,Guayaquil,15,6379,33.3,No,1,170
+PROV-0024,Mecanica Integral Cuenca 24,Vidrieria,Cuenca,11,934,45.5,No,0,153
+PROV-0025,Taller Ruta Segura Guayaquil 25,Taller,Guayaquil,10,4373,10.0,No,0,33
+PROV-0026,Clinica de Accidentes Loja 26,Perito,Loja,30,7932,50.0,No,5,115
+PROV-0027,Servicios Quito Quito 27,Proveedor de repuestos,Quito,6,5293,0.0,No,2,64
+PROV-0028,AutoCentro Norte Machala 28,Proveedor de repuestos,Machala,12,3410,16.7,No,1,151
+PROV-0029,Pintura Express Quito 29,Taller,Quito,19,6389,21.1,No,1,116
+PROV-0030,Diagnostico Automotriz Guayaquil 30,Perito,Guayaquil,24,7440,20.8,No,0,71
+PROV-0031,Pintura Express Santo Domingo 31,Proveedor de repuestos,Santo Domingo,15,6782,80.0,No,8,135
+PROV-0032,Latoneria Pacifico Guayaquil 32,Taller,Guayaquil,20,8374,25.0,No,2,81
+PROV-0033,Centro Pericial Quito 33,Perito,Quito,31,9004,61.3,No,9,139
+PROV-0034,Centro Medico Vial Guayaquil 34,Perito,Guayaquil,16,6146,31.2,No,2,111
+PROV-0035,Diagnostico Automotriz Quito 35,Perito,Quito,29,5937,24.1,No,1,35
+PROV-0036,Talleres Unidas Guayaquil 36,Grua,Guayaquil,4,14327,25.0,No,2,42
+PROV-0037,Soluciones de Choque Loja 37,Taller,Loja,14,8985,35.7,No,1,27
+PROV-0038,AutoCentro Norte Quito 38,Grua,Quito,2,13650,50.0,No,0,72
+PROV-0039,Taller La Pradera Quito 39,Taller,Quito,31,7268,58.1,Si,2,109
+PROV-0040,Taller Metropolitano Quito 40,Taller,Quito,19,5483,31.6,No,1,60
+PROV-0041,Servicios Quito Loja 41,Grua,Loja,2,17695,50.0,No,2,118
+PROV-0042,Latoneria Pacifico Quito 42,Grua,Quito,2,17395,50.0,No,0,44
+PROV-0043,Soluciones de Choque Guayaquil 43,Taller,Guayaquil,12,5756,25.0,No,1,117
+PROV-0044,Centro Pericial Quito 44,Taller,Quito,11,8601,27.3,No,0,146
+PROV-0045,Taller Metropolitano Quito 45,Perito,Quito,21,11171,47.6,No,5,144
+PROV-0046,Latoneria Pacifico Guayaquil 46,Clinica,Guayaquil,10,3108,40.0,No,0,64
+PROV-0047,Taller Metropolitano Guayaquil 47,Vidrieria,Guayaquil,20,629,40.0,No,2,109
+PROV-0048,Latoneria Pacifico Santo Domingo 48,Clinica,Santo Domingo,22,3886,40.9,No,1,19
+PROV-0049,AutoCentro Norte Guayaquil 49,Taller,Guayaquil,20,9635,55.0,No,5,106
+PROV-0050,Pintura Express Guayaquil 50,Perito,Guayaquil,13,8112,15.4,No,1,99
+PROV-0051,Clinica de Accidentes Loja 51,Taller,Loja,8,7078,25.0,No,2,8
+PROV-0052,Latoneria Pacifico Guayaquil 52,Clinica,Guayaquil,19,2372,31.6,No,1,33
+PROV-0053,Taller Andino Quito 53,Perito,Quito,27,12257,63.0,No,5,176
+PROV-0054,Mecanica Integral Loja 54,Taller,Loja,13,9107,30.8,No,0,27
+PROV-0055,Reparaciones Sur Loja 55,Taller,Loja,17,4798,11.8,No,2,30
+PROV-0056,Latoneria Pacifico Guayaquil 56,Perito,Guayaquil,12,6477,16.7,No,0,81
+PROV-0057,AutoCentro Norte Cuenca 57,Taller,Cuenca,20,7368,20.0,No,1,51
+PROV-0058,Taller La Pradera Quito 58,Taller,Quito,18,8715,16.7,No,2,100
+PROV-0059,Pintura Express Santo Domingo 59,Taller,Santo Domingo,12,12430,25.0,No,1,180
+PROV-0060,Peritajes Sierra Quito 60,Taller,Quito,26,8434,26.9,No,0,52

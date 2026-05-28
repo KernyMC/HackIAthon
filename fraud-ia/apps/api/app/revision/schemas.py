@@ -30,3 +30,24 @@ class ColaRevisionItem(BaseModel):
     revisor_especialidad: str
     fecha_asignacion: Optional[datetime]
     monto_reclamado: Optional[float]
+
+
+class RevisionAccion(BaseModel):
+    accion: str  # "aprobar" | "rechazar" | "reasignar"
+    id_revisor_nuevo: Optional[str] = None  # solo para "reasignar"
+
+
+class KanbanCard(BaseModel):
+    id_siniestro: str
+    ramo: str
+    ciudad: Optional[str]
+    score_final: Optional[float]
+    nivel_riesgo: Optional[str]
+    monto_reclamado: Optional[float]
+    fecha_asignacion: Optional[datetime]
+    dias_en_cola: int
+
+
+class KanbanColumn(BaseModel):
+    revisor: Revisor
+    casos: list[KanbanCard]

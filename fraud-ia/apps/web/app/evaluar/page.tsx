@@ -1,7 +1,7 @@
 // apps/web/app/evaluar/page.tsx
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import {
   ShieldAlert, ShieldCheck, ShieldQuestion,
   Upload, FileText, X, Loader2, AlertTriangle, CheckCircle2,
@@ -43,11 +43,44 @@ export default function EvaluarPage() {
     dias_entre_ocurrencia_reporte: '',
     documentos_completos: true,
   })
-  const [pdfFile, setPdfFile] = useState<File | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<EvaluarResult | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const fileRef = useRef<HTMLInputElement>(null)
+  const [pdfFile, setPdfFile]   = useState<File | null>(null)
+  const [loading, setLoading]   = useState(false)
+  const [result, setResult]     = useState<EvaluarResult | null>(null)
+  const [error, setError]       = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const fileRef  = useRef<HTMLInputElement>(null)
+  const dragRef  = useRef(0) // counter to handle enter/leave on children
+
+  const acceptFile = useCallback((file: File) => {
+    if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
+      setPdfFile(file)
+    }
+  }, [])
+
+  const onDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    dragRef.current++
+    setIsDragging(true)
+  }, [])
+
+  const onDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    dragRef.current--
+    if (dragRef.current === 0) setIsDragging(false)
+  }, [])
+
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+  }, [])
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    dragRef.current = 0
+    setIsDragging(false)
+    const file = e.dataTransfer.files[0]
+    if (file) acceptFile(file)
+  }, [acceptFile])
 
   const set = (k: string, v: string | boolean) =>
     setForm(f => ({ ...f, [k]: v }))
@@ -201,33 +234,63 @@ export default function EvaluarPage() {
               <span className="text-sm text-neutral-300">Documentación completa</span>
             </label>
 
-            {/* PDF upload */}
+            {/* PDF upload — drag & drop */}
             <div>
               <label className="text-xs text-neutral-400 mb-1 block">Peritaje / informe (PDF, opcional)</label>
+
               {pdfFile ? (
-                <div className="flex items-center gap-2 bg-[#141414] border border-[#2A2A2A] rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2 bg-[#141414] border border-[#C8FF00]/30 rounded-lg px-3 py-2">
                   <FileText className="w-4 h-4 text-[#C8FF00] flex-shrink-0" />
                   <span className="text-sm text-white truncate flex-1">{pdfFile.name}</span>
-                  <button type="button" onClick={() => setPdfFile(null)}>
-                    <X className="w-4 h-4 text-neutral-500 hover:text-white" />
+                  <span className="text-[10px] text-neutral-600 flex-shrink-0">
+                    {(pdfFile.size / 1024 / 1024).toFixed(1)} MB
+                  </span>
+                  <button type="button" onClick={() => setPdfFile(null)} className="cursor-pointer">
+                    <X className="w-4 h-4 text-neutral-500 hover:text-white transition-colors" />
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button"
+                <div
+                  onDragEnter={onDragEnter}
+                  onDragLeave={onDragLeave}
+                  onDragOver={onDragOver}
+                  onDrop={onDrop}
                   onClick={() => fileRef.current?.click()}
-                  className="w-full border border-dashed border-[#2A2A2A] hover:border-[#C8FF00]/40 rounded-lg px-3 py-4 text-center transition-colors"
+                  className={[
+                    'w-full border-2 border-dashed rounded-xl px-4 py-6 text-center transition-all duration-150 cursor-pointer select-none',
+                    isDragging
+                      ? 'border-[#C8FF00] bg-[#C8FF00]/8 scale-[1.01]'
+                      : 'border-[#2A2A2A] hover:border-[#C8FF00]/40 hover:bg-[#C8FF00]/4',
+                  ].join(' ')}
                 >
-                  <Upload className="w-5 h-5 text-neutral-600 mx-auto mb-1" />
-                  <span className="text-xs text-neutral-500">Clic para adjuntar PDF (máx 10 MB)</span>
-                </button>
+                  <Upload
+                    className={`w-7 h-7 mx-auto mb-2 transition-colors duration-150 ${
+                      isDragging ? 'text-[#C8FF00]' : 'text-neutral-600'
+                    }`}
+                  />
+                  {isDragging ? (
+                    <>
+                      <p className="text-sm font-bold text-[#C8FF00]">Suelta el archivo aquí</p>
+                      <p className="text-xs text-[#C8FF00]/60 mt-0.5">Solo archivos PDF</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-neutral-400">
+                        Arrastra un PDF aquí, o{' '}
+                        <span className="text-[#C8FF00] font-semibold">haz clic para seleccionar</span>
+                      </p>
+                      <p className="text-xs text-neutral-600 mt-1">PDF · máx. 10 MB</p>
+                    </>
+                  )}
+                </div>
               )}
+
               <input
                 ref={fileRef}
                 type="file"
                 accept=".pdf"
                 className="hidden"
-                onChange={e => e.target.files?.[0] && setPdfFile(e.target.files[0])}
+                onChange={e => { const f = e.target.files?.[0]; if (f) acceptFile(f) }}
               />
             </div>
 

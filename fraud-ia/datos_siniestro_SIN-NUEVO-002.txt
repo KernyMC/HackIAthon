@@ -1,0 +1,42 @@
+== DATOS PARA FORMULARIO /evaluar ==
+
+Ramo:                     Automóvil
+Ciudad:                   Guayaquil
+Monto reclamado (USD):    55000
+Nombre del proveedor:     Auto Rescate Sur
+Días desde inicio póliza: 32
+Días ocurrencia→reporte:  4
+Documentación completa:   NO (desmarcar el checkbox)
+
+Descripción del siniestro:
+  Incendio total del vehículo en vía Perimetral km 9, sector
+  industrial, a las 03:15 horas. Asegurado declara cortocircuito
+  eléctrico en tablero. Sin testigos. Sin reporte ECU-911 ni
+  Cuerpo de Bomberos. Pérdida total declarada.
+  Chevrolet Tahoe 2023, placa GBA-7823.
+
+PDF a adjuntar: peritaje_SIN-NUEVO-002.pdf
+
+== QUÉ ESPERAR AL EVALUAR ==
+
+Score esperado: ~78 (Rojo Alto)
+  — Póliza con solo 32 días de vigencia + proveedor en historial de alertas
+  — Si se confirma acelerante → sube a ~92 (Rojo Crítico)
+
+Alertas que deben aparecer:
+  ◆ Siniestro ocurrido 32 días después del inicio de póliza (umbral: 90)
+  ◆ Documentación declarada como incompleta
+  ◆ Proveedor con historial de alertas previas (Auto Rescate Sur)
+  ◆ Ausencia total de registros ECU-911 y Bomberos
+
+Acción sugerida: Escalar inmediatamente a equipo de antifraude antes de cualquier desembolso
+
+== PREGUNTAS PARA EL AGENTE (después de indexar el PDF) ==
+
+Una vez que el PDF quede indexado, prueba estas preguntas en el chat:
+
+  → "¿Qué inconsistencias encontró el perito en el peritaje SIN-NUEVO-002?"
+  → "¿Cuánto es la diferencia entre lo reclamado y los daños verificados en el caso de incendio?"
+  → "¿Por qué el perito sospecha que el incendio fue provocado?"
+  → "¿Qué relación tiene Auto Rescate Sur con siniestros anteriores?"
+  → "¿Qué dice el historial ANT sobre el vehículo GBA-7823?"

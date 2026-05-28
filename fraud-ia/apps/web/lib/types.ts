@@ -160,3 +160,14 @@ export interface NarrativasSimilaresResponse {
   clusters: NarrativaCluster[]
   pares: NarrativaPar[]
 }
+
+export interface EvaluarResult {
+  score_reglas: number
+  score_final: number
+  nivel_riesgo: 'Verde Bajo' | 'Amarillo Medio' | 'Rojo Alto'
+  alertas: string[]
+  accion_sugerida: string
+  proveedor_restringido: boolean
+  documento_indexado: string | null
+  mensaje_documento: string | null
+}

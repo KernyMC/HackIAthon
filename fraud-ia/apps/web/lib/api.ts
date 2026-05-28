@@ -8,6 +8,7 @@ import type {
   Documento,
   ChatResponse,
   NarrativasSimilaresResponse,
+  EvaluarResult,
 } from './types'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -66,6 +67,20 @@ export async function chat(sessionId: string, message: string): Promise<ChatResp
 
 export async function getNarrativasSimilares(threshold = 0.22): Promise<NarrativasSimilaresResponse> {
   return apiFetch<NarrativasSimilaresResponse>(`/api/narrativas/similares?threshold=${threshold}`)
+}
+
+export async function evaluarSiniestro(
+  form: FormData
+): Promise<EvaluarResult> {
+  const res = await fetch('/api/siniestros/evaluar', {
+    method: 'POST',
+    body: form,   // multipart — NO Content-Type header, browser lo pone automático
+  })
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`API error ${res.status}: ${text}`)
+  }
+  return res.json() as Promise<EvaluarResult>
 }
 
 export async function healthCheck(): Promise<{ status: string }> {

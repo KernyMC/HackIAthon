@@ -14,6 +14,7 @@ def list_siniestros(
     ramo: Optional[str] = None,
     search: Optional[str] = None,
     score_min: Optional[float] = None,
+    estado_revision: Optional[str] = None,
     limit: int = 50,
     offset: int = 0,
 ) -> dict:
@@ -35,6 +36,9 @@ def list_siniestros(
             "OR s.ciudad ILIKE :search OR p.nombre_proveedor ILIKE :search)"
         )
         params["search"] = f"%{search}%"
+    if estado_revision:
+        conditions.append("s.estado_revision = :estado_revision")
+        params["estado_revision"] = estado_revision
 
     where = "WHERE " + " AND ".join(conditions) if conditions else ""
 
@@ -55,7 +59,7 @@ def list_siniestros(
             s.score_reglas, s.score_modelo_simulado, s.score_final, s.nivel_riesgo,
             s.alertas_activadas, s.reglas_criticas_activadas, s.accion_sugerida,
             s.documentos_completos, s.dias_desde_inicio_poliza,
-            s.etiqueta_fraude_simulada,
+            s.etiqueta_fraude_simulada, s.estado_revision,
             p.nombre_proveedor
         FROM claims.siniestros s
         LEFT JOIN claims.proveedores p ON p.id_proveedor = s.id_proveedor

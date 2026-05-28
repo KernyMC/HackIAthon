@@ -66,6 +66,7 @@ export interface Documento {
 
 export interface SiniestroDetail extends Siniestro {
   documentos: Documento[]
+  estado_revision?: string
 }
 
 export interface SiniestroPage {
@@ -171,4 +172,33 @@ export interface EvaluarResult {
   proveedor_restringido: boolean
   documento_indexado: string | null
   mensaje_documento: string | null
+}
+
+export interface Revisor {
+  id_revisor: string
+  nombre: string
+  especialidad: string
+  email: string
+  casos_activos: number
+}
+
+export interface RevisionResult {
+  id_siniestro: string
+  estado_revision: string
+  revisor: Revisor
+  fecha_asignacion: string
+  mensaje: string
+}
+
+export interface ColaRevisionItem {
+  id_siniestro: string
+  ramo: string
+  ciudad: string | null
+  score_final: number | null
+  nivel_riesgo: string | null
+  estado_revision: string
+  revisor_nombre: string
+  revisor_especialidad: string
+  fecha_asignacion: string | null
+  monto_reclamado: number | null
 }

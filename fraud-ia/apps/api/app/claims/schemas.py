@@ -38,6 +38,7 @@ class SiniestroBase(BaseModel):
     reglas_criticas_activadas: Optional[Any] = None
     accion_sugerida: Optional[str] = None
     etiqueta_fraude_simulada: Optional[int] = None
+    estado_revision: Optional[str] = None
 
     class Config:
         from_attributes = True

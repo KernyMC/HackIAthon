@@ -9,6 +9,8 @@ import type {
   ChatResponse,
   NarrativasSimilaresResponse,
   EvaluarResult,
+  RevisionResult,
+  ColaRevisionItem,
 } from './types'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -81,6 +83,16 @@ export async function evaluarSiniestro(
     throw new Error(`API error ${res.status}: ${text}`)
   }
   return res.json() as Promise<EvaluarResult>
+}
+
+export async function enviarARevision(idSiniestro: string): Promise<RevisionResult> {
+  return apiFetch<RevisionResult>(`/api/siniestros/${encodeURIComponent(idSiniestro)}/revision`, {
+    method: 'POST',
+  })
+}
+
+export async function getColaRevision(limit = 20): Promise<ColaRevisionItem[]> {
+  return apiFetch<ColaRevisionItem[]>(`/api/revisiones/cola?limit=${limit}`)
 }
 
 export async function healthCheck(): Promise<{ status: string }> {

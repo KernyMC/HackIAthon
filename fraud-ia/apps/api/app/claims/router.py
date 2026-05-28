@@ -18,13 +18,14 @@ def list_siniestros(
     ramo: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     score_min: Optional[float] = Query(None),
+    estado_revision: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=1000),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ):
     result = repository.list_siniestros(
         db, nivel_riesgo=nivel_riesgo, ramo=ramo, search=search,
-        score_min=score_min, limit=limit, offset=offset
+        score_min=score_min, estado_revision=estado_revision, limit=limit, offset=offset
     )
     return schemas.SiniestroPage(
         items=result["items"],

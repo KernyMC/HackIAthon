@@ -204,3 +204,24 @@ export interface ColaRevisionItem {
   fecha_asignacion: string | null
   monto_reclamado: number | null
 }
+
+export interface KanbanCard {
+  id_siniestro: string
+  ramo: string
+  ciudad: string | null
+  score_final: number | null
+  nivel_riesgo: string | null
+  monto_reclamado: number | null
+  fecha_asignacion: string | null
+  dias_en_cola: number
+}
+
+export interface KanbanColumn {
+  revisor: Revisor
+  casos: KanbanCard[]
+}
+
+export interface RevisionAccionPayload {
+  accion: 'aprobar' | 'rechazar' | 'reasignar'
+  id_revisor_nuevo?: string
+}

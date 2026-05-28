@@ -11,6 +11,8 @@ import type {
   EvaluarResult,
   RevisionResult,
   ColaRevisionItem,
+  KanbanColumn,
+  RevisionAccionPayload,
 } from './types'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -94,6 +96,20 @@ export async function enviarARevision(idSiniestro: string): Promise<RevisionResu
 
 export async function getColaRevision(limit = 20): Promise<ColaRevisionItem[]> {
   return apiFetch<ColaRevisionItem[]>(`/api/revisiones/cola?limit=${limit}`)
+}
+
+export async function getKanban(): Promise<KanbanColumn[]> {
+  return apiFetch<KanbanColumn[]>('/api/revisiones/kanban')
+}
+
+export async function resolverRevision(
+  idSiniestro: string,
+  payload: RevisionAccionPayload,
+): Promise<{ mensaje: string; estado_revision?: string; id_revisor_nuevo?: string }> {
+  return apiFetch(`/api/siniestros/${encodeURIComponent(idSiniestro)}/revision`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
 }
 
 export async function healthCheck(): Promise<{ status: string }> {

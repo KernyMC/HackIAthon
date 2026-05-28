@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { MessageSquare, X, Send, ShieldAlert, Minimize2 } from 'lucide-react'
+import Image from 'next/image'
+import { MessageSquare, X, Send, Minimize2 } from 'lucide-react'
 import { chat } from '@/lib/api'
 import { MarkdownContent } from '@/components/ui/markdown-content'
 
@@ -75,10 +76,10 @@ export default function ChatBubble() {
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-[#0F0F0F] border-b border-[#2A2A2A] flex-shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-[#C8FF00] flex items-center justify-center">
-                <MessageSquare className="w-3 h-3 text-black" />
+              <div className="w-6 h-6 rounded-lg overflow-hidden flex-shrink-0">
+                <Image src="/logo.png" alt="FraudSweep" width={24} height={24} className="w-full h-full object-cover" />
               </div>
-              <span className="text-xs font-bold text-white">FraudIA Assistant</span>
+              <span className="text-xs font-bold text-white">FraudSweep Assistant</span>
               <span className="text-[9px] text-neutral-600">· Agente IA</span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -103,8 +104,8 @@ export default function ChatBubble() {
               {messages.map((m, i) => (
                 <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {m.role === 'assistant' && (
-                    <div className="w-5 h-5 rounded-md bg-[#C8FF00] flex items-center justify-center flex-shrink-0 mt-0.5 mr-1.5">
-                      <MessageSquare className="w-2.5 h-2.5 text-black" />
+                    <div className="w-5 h-5 rounded-md overflow-hidden flex-shrink-0 mt-0.5 mr-1.5">
+                      <Image src="/logo.png" alt="FraudSweep" width={20} height={20} className="w-full h-full object-cover" />
                     </div>
                   )}
                   {m.role === 'user' ? (
@@ -121,8 +122,8 @@ export default function ChatBubble() {
 
               {loading && (
                 <div className="flex justify-start">
-                  <div className="w-5 h-5 rounded-md bg-[#C8FF00] flex items-center justify-center flex-shrink-0 mt-0.5 mr-1.5">
-                    <MessageSquare className="w-2.5 h-2.5 text-black" />
+                  <div className="w-5 h-5 rounded-md overflow-hidden flex-shrink-0 mt-0.5 mr-1.5">
+                    <Image src="/logo.png" alt="FraudSweep" width={20} height={20} className="w-full h-full object-cover" />
                   </div>
                   <div className="bg-[#1C1C1C] border border-[#2A2A2A] px-3 py-2 rounded-xl rounded-bl-none">
                     <div className="flex gap-1 items-center">
@@ -179,19 +180,18 @@ export default function ChatBubble() {
       {/* ── Bubble button ── */}
       <button
         onClick={() => { setOpen(v => !v); setMin(false) }}
-        className="relative w-14 h-14 bg-[#C8FF00] hover:bg-[#d4ff33] text-black rounded-full shadow-xl flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
+        className="relative w-14 h-14 bg-[#0f0f0f] hover:bg-[#161616] border-2 border-[#C8FF00]/60 hover:border-[#C8FF00] text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
         title="Abrir asistente IA"
       >
         {open
-          ? <X className="w-5 h-5" />
-          : <MessageSquare className="w-6 h-6" />
+          ? <X className="w-5 h-5 text-[#C8FF00]" />
+          : <Image src="/logo.png" alt="FraudSweep" width={34} height={34} className="rounded-full object-cover" />
         }
         {!open && unread > 0 && (
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
             {unread}
           </span>
         )}
-        {/* Pulse indicator when closed */}
         {!open && (
           <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-[#C8FF00] rounded-full animate-ping opacity-60" />
         )}

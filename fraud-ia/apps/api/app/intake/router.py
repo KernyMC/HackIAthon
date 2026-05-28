@@ -117,7 +117,7 @@ async def evaluar_siniestro(
                     :dias_inicio, :dias_reporte,
                     :restringido,
                     :score_reglas, :score_modelo, :score_final,
-                    :nivel, :alertas::jsonb, :accion,
+                    :nivel, CAST(:alertas AS jsonb), :accion,
                     'En revisión', 'ingreso_manual'
                 )
             """),

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   useReactTable,
   getCoreRowModel,
@@ -136,12 +136,15 @@ const columns: ColumnDef<Siniestro>[] = [
 
 export default function SiniestrosPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [data, setData] = useState<Siniestro[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(0)
-  const [nivelRiesgo, setNivelRiesgo] = useState('all')
+  const [nivelRiesgo, setNivelRiesgo] = useState(() =>
+    searchParams.get('estado_revision') === 'En revisión' ? 'revision' : 'all'
+  )
   const [ramo, setRamo] = useState('')
   const [search, setSearch] = useState('')
   const [scoreMin, setScoreMin] = useState('')

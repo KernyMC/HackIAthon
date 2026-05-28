@@ -22,7 +22,7 @@ import { styled } from '@mui/material/styles'
 import { BarChart } from '@mui/x-charts/BarChart'
 
 import {
-  ShieldAlert, ShieldCheck, AlertTriangle, TrendingUp, DollarSign, Activity, RefreshCw, RotateCcw, MessageSquare, ExternalLink, UserCheck,
+  ShieldAlert, ShieldCheck, AlertTriangle, TrendingUp, DollarSign, Activity, RefreshCw, RotateCcw, MessageSquare, ExternalLink, UserCheck, Info, ChevronRight,
 } from 'lucide-react'
 import { getKpis, getSiniestros, getProveedoresRiesgo, getNarrativasSimilares, getColaRevision } from '@/lib/api'
 import type { KPIs, Siniestro, Proveedor, NarrativasSimilaresResponse, ColaRevisionItem } from '@/lib/types'
@@ -139,8 +139,8 @@ function KPICard({ label, value, subValue, icon: Icon, accent, pct }: {
 }
 
 // ── Card wrapper ─────────────────────────────────────────────────────────────
-function Card({ title, children, link, accent }: {
-  title: string; children: React.ReactNode; link?: { href: string; label: string }; accent?: string
+function Card({ title, children, link, accent, tooltip }: {
+  title: string; children: React.ReactNode; link?: { href: string; label: string }; accent?: string; tooltip?: string
 }) {
   return (
     <div className="h-full rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] flex flex-col overflow-hidden">
@@ -148,8 +148,20 @@ function Card({ title, children, link, accent }: {
         <div className="flex items-center gap-2">
           {accent && <div className="w-1 h-4 rounded-full" style={{ background: accent }} />}
           <h2 className="text-[13px] font-semibold text-white">{title}</h2>
+          {tooltip && (
+            <div className="group relative flex items-center">
+              <Info className="w-3 h-3 text-neutral-600 hover:text-neutral-400 cursor-help transition-colors" />
+              <div className="fixed z-[9999] hidden group-hover:block w-56 bg-[#1A1A1A] border border-[#3A3A3A] text-neutral-300 text-[10px] leading-relaxed rounded-lg px-3 py-2 shadow-2xl pointer-events-none translate-x-2 -translate-y-6">
+                {tooltip}
+              </div>
+            </div>
+          )}
         </div>
-        {link && <Link href={link.href} className="text-[12px] text-[#C8FF00] hover:text-white transition-colors">{link.label} →</Link>}
+        {link && (
+          <Link href={link.href} className="flex items-center gap-0.5 text-[12px] text-[#C8FF00] hover:text-white transition-colors">
+            {link.label} <ChevronRight className="w-3 h-3" />
+          </Link>
+        )}
       </div>
       <div className="flex-1 min-h-0 px-3 pb-3 pt-2">{children}</div>
     </div>
@@ -451,7 +463,7 @@ export default function DashboardPage() {
             {/* ── Casos Críticos — revisar hoy ─────────────────────────── */}
             <div className="grid-stack-item" gs-x={pos('criticos').x} gs-y={pos('criticos').y} gs-w={pos('criticos').w} gs-h={pos('criticos').h}>
               <div className="grid-stack-item-content">
-                <Card title="Casos Críticos · Revisar Hoy" accent="#ef4444">
+                <Card title="Casos Críticos · Revisar Hoy" accent="#ef4444" tooltip="Siniestros con score ≥ 70 (Rojo Alto) que requieren atención inmediata hoy. Ordenados por score descendente.">
                   <div className="flex flex-col gap-1.5 h-full overflow-auto">
                     {criticalCases.map(s => {
                       const alertas = parseAlerta(s.alertas_activadas).slice(0, 2)
@@ -505,7 +517,7 @@ export default function DashboardPage() {
             {/* ── Nested PieChart — riesgo × ramo ──────────────────────── */}
             <div className="grid-stack-item" gs-x={pos('donut').x} gs-y={pos('donut').y} gs-w={pos('donut').w} gs-h={pos('donut').h}>
               <div className="grid-stack-item-content">
-                <Card title="Riesgo × Ramo" accent="#22c55e">
+                <Card title="Riesgo × Ramo" accent="#22c55e" tooltip="Distribución de todos los siniestros por nivel de riesgo (Verde/Amarillo/Rojo) agrupados por tipo de ramo.">
                   <div className="flex flex-col h-full">
                     <div className="flex-1 min-h-0">
                       <PieChart
@@ -548,7 +560,7 @@ export default function DashboardPage() {
             {/* ── Ramos por % Rojo Alto — datos reales ─────────────────── */}
             <div className="grid-stack-item" gs-x={pos('ramos').x} gs-y={pos('ramos').y} gs-w={pos('ramos').w} gs-h={pos('ramos').h}>
               <div className="grid-stack-item-content">
-                <Card title="Ramos · % Riesgo Rojo" accent="#ef4444">
+                <Card title="Ramos · % Riesgo Rojo" accent="#ef4444" tooltip="Porcentaje de casos Rojo Alto sobre el total de cada ramo. Un ramo con 100% indica que todos sus siniestros son de alto riesgo.">
                   <div className="flex flex-col gap-2 h-full overflow-auto">
                     {ramoRisk.map((r, i) => (
                       <div key={r.ramo}>
@@ -589,7 +601,7 @@ export default function DashboardPage() {
             {/* ── Top 10 siniestros por score — lista horizontal ─────── */}
             <div className="grid-stack-item" gs-x={pos('bar').x} gs-y={pos('bar').y} gs-w={pos('bar').w} gs-h={pos('bar').h}>
               <div className="grid-stack-item-content">
-                <Card title="Top 10 Siniestros · Mayor Score de Riesgo" accent="#eab308">
+                <Card title="Top 10 Siniestros · Mayor Score de Riesgo" accent="#eab308" tooltip="Los 10 siniestros con el score de riesgo más alto. Score = 60% reglas + 40% modelo simulado. Rojo ≥70, Amarillo ≥40.">
                   <div className="flex flex-col gap-1.5 h-full overflow-auto">
                     {barData.map((d, i) => {
                       const color = d.score >= 70 ? '#ef4444' : d.score >= 40 ? '#eab308' : '#22c55e'
@@ -735,7 +747,7 @@ export default function DashboardPage() {
             {/* ── Providers table ───────────────────────────────────────── */}
             <div className="grid-stack-item" gs-x={pos('providers').x} gs-y={pos('providers').y} gs-w={pos('providers').w} gs-h={pos('providers').h}>
               <div className="grid-stack-item-content">
-                <Card title="Top Proveedores · Alertas Rojas" link={{ href: '/proveedores', label: 'Ver todos' }} accent="#FF6500">
+                <Card title="Top Proveedores · Alertas Rojas" link={{ href: '/proveedores', label: 'Ver todos' }} accent="#FF6500" tooltip="Proveedores con mayor concentración de siniestros Rojo Alto. Los marcados con ⚠ están en la lista restrictiva de la aseguradora.">
                   <div className="overflow-auto h-full">
                     <table className="w-full">
                       <thead>
@@ -780,6 +792,12 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2.5">
                       <div className="w-1 h-4 rounded-full bg-orange-500" />
                       <h2 className="text-[11px] font-semibold text-white">Narrativas Similares Detectadas · RF-07</h2>
+                      <div className="group relative flex items-center">
+                        <Info className="w-3 h-3 text-neutral-600 hover:text-neutral-400 cursor-help transition-colors" />
+                        <div className="fixed z-[9999] hidden group-hover:block w-56 bg-[#1A1A1A] border border-[#3A3A3A] text-neutral-300 text-[10px] leading-relaxed rounded-lg px-3 py-2 shadow-2xl pointer-events-none translate-x-2 -translate-y-6">
+                          Pares de siniestros con descripciones casi idénticas detectadas por TF-IDF coseno. Activa la regla RF-07 que puede indicar fraude coordinado.
+                        </div>
+                      </div>
                       {narrativas && narrativas.resumen.total_pares > 0 && (
                         <Chip
                           label={`${narrativas.resumen.total_clusters} redes · ${narrativas.resumen.casos_involucrados} casos`}
@@ -974,6 +992,12 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2">
                       <UserCheck className="w-4 h-4 text-amber-400" />
                       <span className="text-[13px] font-semibold text-white">Cola de Revisión Humana</span>
+                      <div className="group relative flex items-center">
+                        <Info className="w-3 h-3 text-neutral-600 hover:text-neutral-400 cursor-help transition-colors" />
+                        <div className="fixed z-[9999] hidden group-hover:block w-56 bg-[#1A1A1A] border border-[#3A3A3A] text-neutral-300 text-[10px] leading-relaxed rounded-lg px-3 py-2 shadow-2xl pointer-events-none translate-x-2 -translate-y-6">
+                          Siniestros enviados a revisión humana con el analista asignado automáticamente por ramo.
+                        </div>
+                      </div>
                     </div>
                     <span className="text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
                       {cola.length} casos
@@ -1023,7 +1047,7 @@ export default function DashboardPage() {
                     href="/siniestros?estado_revision=En+revisión"
                     className="flex items-center justify-center gap-1 mt-3 text-[10px] text-neutral-600 hover:text-amber-400 transition-colors"
                   >
-                    Ver todos →
+                    Ver todos <ChevronRight className="w-3 h-3" />
                   </a>
                 </div>
               </div>

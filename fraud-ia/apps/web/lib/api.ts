@@ -41,6 +41,7 @@ export async function getSiniestros(params: SiniestrosParams = {}): Promise<Sini
   if (params.ramo) query.set('ramo', params.ramo)
   if (params.search) query.set('search', params.search)
   if (params.score_min != null) query.set('score_min', String(params.score_min))
+  if (params.estado_revision) query.set('estado_revision', params.estado_revision)
   if (params.limit != null) query.set('limit', String(params.limit))
   if (params.offset != null) query.set('offset', String(params.offset))
 

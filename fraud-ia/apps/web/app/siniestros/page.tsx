@@ -12,10 +12,10 @@ import {
 } from '@tanstack/react-table'
 import {
   Search, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
-  ChevronsUpDown, RefreshCw, AlertTriangle, Filter, MessageSquare,
+  ChevronsUpDown, RefreshCw, AlertTriangle, Filter, MessageSquare, UserCheck,
 } from 'lucide-react'
 import Image from 'next/image'
-import { getSiniestros, getKpis } from '@/lib/api'
+import { getSiniestros, getKpis, enviarARevision } from '@/lib/api'
 import type { Siniestro, SiniestrosParams, KPIs } from '@/lib/types'
 import { formatMoney, formatScore, truncate } from '@/lib/utils'
 import { RiskBadge } from '@/components/ui/risk-badge'
@@ -96,7 +96,17 @@ const columns: ColumnDef<Siniestro>[] = [
   {
     accessorKey: 'nivel_riesgo',
     header: 'Nivel',
-    cell: ({ getValue }) => <RiskBadge nivel={getValue<string>()} />,
+    cell: ({ getValue, row }) => (
+      <div className="flex items-center gap-1.5 flex-wrap">
+        <RiskBadge nivel={getValue<string>()} />
+        {row.original.estado_revision === 'En revisión' && (
+          <span className="flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded">
+            <UserCheck className="w-2.5 h-2.5" />
+            Revisión
+          </span>
+        )}
+      </div>
+    ),
   },
   {
     accessorKey: 'alertas_activadas',
@@ -148,7 +158,11 @@ export default function SiniestrosPage() {
     setError(null)
     try {
       const params: SiniestrosParams = { limit: PAGE_SIZE, offset: pg * PAGE_SIZE }
-      if (nivelRiesgo !== 'all') params.nivel_riesgo = nivelRiesgo
+      if (nivelRiesgo === 'revision') {
+        params.estado_revision = 'En revisión'
+      } else if (nivelRiesgo !== 'all') {
+        params.nivel_riesgo = nivelRiesgo
+      }
       if (ramo) params.ramo = ramo
       if (search) params.search = search
       if (scoreMin) params.score_min = Number(scoreMin)
@@ -292,6 +306,16 @@ export default function SiniestrosPage() {
             </SelectContent>
           </Select>
         </div>
+        <button
+          onClick={() => setNivelRiesgo((nivelRiesgo === 'revision' ? 'all' : 'revision') as any)}
+          className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+            nivelRiesgo === 'revision'
+              ? 'bg-amber-500/20 border-amber-500/40 text-amber-400'
+              : 'bg-[#141414] border-[#2A2A2A] text-neutral-500 hover:text-white hover:border-[#3A3A3A]'
+          }`}
+        >
+          En revisión
+        </button>
         <Input
           placeholder="Ramo..."
           value={ramo}

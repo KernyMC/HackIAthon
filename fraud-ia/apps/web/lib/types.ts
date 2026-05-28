@@ -51,6 +51,7 @@ export interface Siniestro {
   fecha_fin?: string
   canal_venta?: string
   estado_poliza?: string
+  estado_revision?: string
 }
 
 export interface Documento {
@@ -83,6 +84,7 @@ export interface SiniestrosParams {
   score_min?: number
   limit?: number
   offset?: number
+  estado_revision?: string
 }
 
 export interface Proveedor {

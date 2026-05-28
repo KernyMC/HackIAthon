@@ -23,11 +23,16 @@ import {
   UserCheck,
   Loader2,
 } from 'lucide-react'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import { Gauge, gaugeClasses } from '@mui/x-charts/Gauge'
+import { BarChart } from '@mui/x-charts/BarChart'
 import { MarkdownContent } from '@/components/ui/markdown-content'
 import { getSiniestro, chat, enviarARevision } from '@/lib/api'
 import type { SiniestroDetail, RevisionResult } from '@/lib/types'
 import { RiskBadge } from '@/components/ui/risk-badge'
 import { formatMoney, formatScore, formatDate } from '@/lib/utils'
+
+const darkTheme = createTheme({ palette: { mode: 'dark' } })
 
 const RF_CODES: Record<string, { label: string; impact: string; isRojo: boolean }> = {
   'RF-01': { label: 'Cobertura Pérdida Total por Robo (PTxRB)',                   impact: 'Rojo automático',   isRojo: true  },
@@ -223,37 +228,75 @@ export default function SiniestroDetailPage() {
 
         {/* ── Score Row ────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-          <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-6 flex flex-col items-center justify-center">
-            <p className="text-xs font-bold text-neutral-600 uppercase tracking-widest mb-3">Score Final</p>
-            <p className="text-7xl font-black leading-none" style={{ color: scoreColor, fontFamily: 'var(--font-heading)' }}>
-              {formatScore(s.score_final)}
-            </p>
-            <p className="text-sm text-neutral-700 mt-2">/ 100 puntos</p>
+
+          {/* Gauge */}
+          <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-5 flex flex-col items-center justify-center">
+            <p className="text-xs font-bold text-neutral-600 uppercase tracking-widest mb-2">Score Final</p>
+            <ThemeProvider theme={darkTheme}>
+              <Gauge
+                value={scoreNum}
+                valueMin={0}
+                valueMax={100}
+                startAngle={-110}
+                endAngle={110}
+                innerRadius="68%"
+                outerRadius="100%"
+                cornerRadius="50%"
+                width={180}
+                height={130}
+                text={({ value }) => `${value}`}
+                sx={{
+                  [`& .${gaugeClasses.valueText}`]: {
+                    fontSize: 36,
+                    fontWeight: 900,
+                    fill: scoreColor,
+                  },
+                  [`& .${gaugeClasses.valueArc}`]: { fill: scoreColor },
+                  [`& .${gaugeClasses.referenceArc}`]: { fill: '#2A2A2A' },
+                }}
+              />
+            </ThemeProvider>
+            <p className="text-xs text-neutral-700 -mt-1">/ 100 pts</p>
           </div>
 
-          <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-6">
-            <p className="text-xs font-bold text-neutral-600 uppercase tracking-widest mb-4">Desglose</p>
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Por reglas</span>
-                <span className="font-bold text-lg" style={{ color: Number(s.score_reglas) >= 70 ? '#ef4444' : Number(s.score_reglas) >= 40 ? '#eab308' : '#22c55e' }}>
-                  {formatScore(s.score_reglas)}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Modelo simulado</span>
-                <span className="font-bold text-lg" style={{ color: Number(s.score_modelo_simulado) >= 70 ? '#ef4444' : Number(s.score_modelo_simulado) >= 40 ? '#eab308' : '#22c55e' }}>
-                  {formatScore(s.score_modelo_simulado)}
-                </span>
-              </div>
-              <div className="h-px bg-[#2A2A2A]" />
-              <div className="flex justify-between">
-                <span className="text-white font-semibold">Score final</span>
-                <span className="font-black text-xl" style={{ color: scoreColor }}>{formatScore(s.score_final)}</span>
-              </div>
+          {/* Desglose con BarChart */}
+          <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-5">
+            <p className="text-xs font-bold text-neutral-600 uppercase tracking-widest mb-1">Desglose del score</p>
+            <div className="flex justify-between text-[10px] text-neutral-600 mb-0 px-1">
+              <span>Score final = 60% reglas + 40% modelo</span>
+            </div>
+            <ThemeProvider theme={darkTheme}>
+              <BarChart
+                layout="horizontal"
+                height={130}
+                margin={{ left: 95, right: 40, top: 12, bottom: 24 }}
+                yAxis={[{
+                  scaleType: 'band',
+                  data: ['Reglas (×0.6)', 'Modelo (×0.4)'],
+                  tickLabelStyle: { fontSize: 11, fill: '#888' },
+                }]}
+                xAxis={[{ min: 0, max: 100, tickLabelStyle: { fontSize: 10, fill: '#666' } }]}
+                series={[{
+                  data: [Number(s.score_reglas) || 0, Number(s.score_modelo_simulado) || 0],
+                  barLabel: ({ value }) => value != null ? `${value}` : '',
+                  color: scoreColor,
+                }]}
+                borderRadius={6}
+                grid={{ vertical: true }}
+                sx={{
+                  '& .MuiChartsGrid-line': { stroke: '#2A2A2A' },
+                  '& .MuiChartsAxis-line, & .MuiChartsAxis-tick': { stroke: '#333' },
+                  '& .MuiBarLabel-root': { fill: '#fff', fontWeight: 700, fontSize: 12 },
+                }}
+              />
+            </ThemeProvider>
+            <div className="flex justify-between text-xs px-1 mt-1">
+              <span className="text-neutral-500">Score final</span>
+              <span className="font-black text-base" style={{ color: scoreColor }}>{formatScore(s.score_final)}</span>
             </div>
           </div>
 
+          {/* Acción sugerida */}
           <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-6">
             <p className="text-xs font-bold text-neutral-600 uppercase tracking-widest mb-3">Acción sugerida</p>
             <div className="flex items-start gap-2.5 mt-2">
@@ -377,21 +420,49 @@ export default function SiniestroDetailPage() {
         </div>
 
         {/* ── Historial ────────────────────────────────────────────────────── */}
-        <div className="grid grid-cols-3 gap-4 mb-5">
-          {[
-            { icon: User, label: 'Historial asegurado', value: s.historial_siniestros_asegurado ?? 0, threshold: 2 },
-            { icon: Car,  label: 'Historial vehículo',  value: s.historial_siniestros_vehiculo  ?? 0, threshold: 1 },
-            { icon: User, label: 'Historial conductor', value: s.historial_siniestros_conductor ?? 0, threshold: 1 },
-          ].map(({ icon: Icon, label, value, threshold }) => (
-            <div key={label} className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-5 text-center">
-              <Icon className="w-5 h-5 text-neutral-600 mx-auto mb-2" />
-              <p className="text-sm text-neutral-600 mb-2">{label}</p>
-              <p className={`text-5xl font-black ${value > threshold ? 'text-yellow-400' : 'text-white'}`} style={{ fontFamily: 'var(--font-heading)' }}>
-                {value}
-              </p>
-              <p className="text-xs text-neutral-700 mt-1.5">siniestros prev.</p>
-            </div>
-          ))}
+        <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-5 mb-5">
+          <div className="flex items-center gap-2 mb-1">
+            <User className="w-4 h-4 text-neutral-600" />
+            <p className="text-xs font-bold text-neutral-600 uppercase tracking-widest">Historial de siniestros previos</p>
+          </div>
+          <p className="text-[10px] text-neutral-700 mb-1 ml-6">Número de siniestros registrados antes del caso actual. Valores en amarillo superan el umbral de alerta.</p>
+          <ThemeProvider theme={darkTheme}>
+            <BarChart
+              layout="horizontal"
+              height={140}
+              margin={{ left: 110, right: 60, top: 8, bottom: 24 }}
+              yAxis={[{
+                scaleType: 'band',
+                data: ['Asegurado', 'Vehículo', 'Conductor'],
+                tickLabelStyle: { fontSize: 12, fill: '#888' },
+              }]}
+              xAxis={[{
+                min: 0,
+                tickLabelStyle: { fontSize: 10, fill: '#666' },
+                tickNumber: 5,
+              }]}
+              series={[{
+                data: [
+                  s.historial_siniestros_asegurado ?? 0,
+                  s.historial_siniestros_vehiculo  ?? 0,
+                  s.historial_siniestros_conductor ?? 0,
+                ],
+                barLabel: ({ value }) => value != null ? `${value} siniest.` : '',
+                colorMap: {
+                  type: 'piecewise',
+                  thresholds: [2, 3],
+                  colors: ['#22c55e', '#eab308', '#ef4444'],
+                },
+              }]}
+              borderRadius={8}
+              grid={{ vertical: true }}
+              sx={{
+                '& .MuiChartsGrid-line': { stroke: '#2A2A2A' },
+                '& .MuiChartsAxis-line, & .MuiChartsAxis-tick': { stroke: '#333' },
+                '& .MuiBarLabel-root': { fill: '#fff', fontWeight: 600, fontSize: 11 },
+              }}
+            />
+          </ThemeProvider>
         </div>
 
         {/* ── Narrativa ────────────────────────────────────────────────────── */}

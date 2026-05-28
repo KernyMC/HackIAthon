@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
   FileText,
+  FilePlus,
   Building2,
   MessageSquare,
   Network,
@@ -17,6 +18,7 @@ const navItems = [
   { href: '/', label: 'Inicio', icon: Home },
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/siniestros', label: 'Siniestros', icon: FileText },
+  { href: '/evaluar', label: 'Evaluar', icon: FilePlus },
   { href: '/proveedores', label: 'Proveedores', icon: Building2 },
   { href: '/chat', label: 'Agente IA', icon: MessageSquare },
   { href: '/arquitectura', label: 'Arquitectura', icon: Network },

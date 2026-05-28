@@ -1,19 +1,21 @@
 'use client'
 
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   useReactTable,
   getCoreRowModel,
+  getSortedRowModel,
   flexRender,
   type ColumnDef,
+  type SortingState,
 } from '@tanstack/react-table'
 import {
-  Search, ChevronLeft, ChevronRight, RefreshCw, AlertTriangle,
-  Filter, MessageSquare,
+  Search, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
+  ChevronsUpDown, RefreshCw, AlertTriangle, Filter, MessageSquare,
 } from 'lucide-react'
-import { getSiniestros } from '@/lib/api'
-import type { Siniestro, SiniestrosParams } from '@/lib/types'
+import { getSiniestros, getKpis } from '@/lib/api'
+import type { Siniestro, SiniestrosParams, KPIs } from '@/lib/types'
 import { formatMoney, formatScore, truncate } from '@/lib/utils'
 import { RiskBadge } from '@/components/ui/risk-badge'
 import { Input } from '@/components/ui/input'
@@ -98,6 +100,7 @@ const columns: ColumnDef<Siniestro>[] = [
   {
     accessorKey: 'alertas_activadas',
     header: 'Alertas',
+    enableSorting: false,
     cell: ({ getValue }) => {
       const raw = getValue<unknown>()
       const alertas: string[] = Array.isArray(raw)
@@ -132,16 +135,12 @@ export default function SiniestrosPage() {
   const [search, setSearch] = useState('')
   const [scoreMin, setScoreMin] = useState('')
 
-  const stats = useMemo(() => {
-    const rojos = data.filter(s => s.nivel_riesgo === 'Rojo Alto').length
-    const amarillos = data.filter(s => s.nivel_riesgo === 'Amarillo Medio').length
-    const verdes = data.filter(s => s.nivel_riesgo === 'Verde Bajo').length
-    const monto = data.reduce((sum, s) => sum + Number(s.monto_reclamado || 0), 0)
-    const scoreAvg = data.length > 0
-      ? data.reduce((sum, s) => sum + Number(s.score_final || 0), 0) / data.length
-      : 0
-    return { rojos, amarillos, verdes, monto, scoreAvg }
-  }, [data])
+  const [kpis, setKpis]       = useState<KPIs | null>(null)
+  const [sorting, setSorting] = useState<SortingState>([])
+
+  useEffect(() => {
+    getKpis().then(setKpis).catch(() => {})
+  }, [])
 
   const fetchData = useCallback(async (pg: number) => {
     setLoading(true)
@@ -177,9 +176,12 @@ export default function SiniestrosPage() {
   const table = useReactTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    manualPagination: true,
-    pageCount: Math.ceil(total / PAGE_SIZE),
+    getCoreRowModel:    getCoreRowModel(),
+    getSortedRowModel:  getSortedRowModel(),
+    onSortingChange:    setSorting,
+    state:              { sorting },
+    manualPagination:   true,
+    pageCount:          Math.ceil(total / PAGE_SIZE),
   })
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
@@ -215,41 +217,41 @@ export default function SiniestrosPage() {
         </button>
       </div>
 
-      {/* KPI strip */}
-      {!loading && data.length > 0 && (
+      {/* KPI strip — always from global /api/kpis, not from paginated data */}
+      {kpis && (
         <div className="grid grid-cols-5 gap-2.5 mb-4">
           {[
             {
               label: 'Rojo Alto',
-              value: stats.rojos,
+              value: kpis.casos_rojos.toLocaleString('es-EC'),
               color: '#ef4444',
               bg: 'bg-red-500/5',
               border: 'border-red-500/20',
             },
             {
               label: 'Amarillo Medio',
-              value: stats.amarillos,
+              value: kpis.casos_amarillos.toLocaleString('es-EC'),
               color: '#eab308',
               bg: 'bg-yellow-500/5',
               border: 'border-yellow-500/20',
             },
             {
               label: 'Verde Bajo',
-              value: stats.verdes,
+              value: kpis.casos_verdes.toLocaleString('es-EC'),
               color: '#22c55e',
               bg: 'bg-green-600/5',
               border: 'border-green-600/20',
             },
             {
               label: 'Score promedio',
-              value: stats.scoreAvg.toFixed(1),
-              color: stats.scoreAvg >= 70 ? '#ef4444' : stats.scoreAvg >= 40 ? '#eab308' : '#22c55e',
+              value: Number(kpis.score_promedio).toFixed(1),
+              color: kpis.score_promedio >= 70 ? '#ef4444' : kpis.score_promedio >= 40 ? '#eab308' : '#22c55e',
               bg: 'bg-[#1C1C1C]',
               border: 'border-[#2A2A2A]',
             },
             {
-              label: 'Monto (página)',
-              value: formatMoney(stats.monto),
+              label: 'Monto total',
+              value: formatMoney(kpis.monto_total_reclamado),
               color: '#C8FF00',
               bg: 'bg-[#C8FF00]/5',
               border: 'border-[#C8FF00]/20',
@@ -326,14 +328,35 @@ export default function SiniestrosPage() {
               <thead>
                 {table.getHeaderGroups().map((hg) => (
                   <tr key={hg.id} className="border-b border-[#222] bg-[#191919]">
-                    {hg.headers.map((header) => (
-                      <th
-                        key={header.id}
-                        className="text-left py-3 px-4 text-[10px] font-semibold text-neutral-600 uppercase tracking-wider whitespace-nowrap"
-                      >
-                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                      </th>
-                    ))}
+                    {hg.headers.map((header) => {
+                      const canSort = header.column.getCanSort()
+                      const sorted  = header.column.getIsSorted()
+                      return (
+                        <th
+                          key={header.id}
+                          className={[
+                            'text-left py-3 px-4 text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap select-none',
+                            canSort
+                              ? 'cursor-pointer text-neutral-500 hover:text-white transition-colors'
+                              : 'text-neutral-600',
+                            sorted ? 'text-[#C8FF00]' : '',
+                          ].join(' ')}
+                          onClick={canSort ? header.column.getToggleSortingHandler() : undefined}
+                          title={canSort ? 'Click para ordenar' : undefined}
+                        >
+                          <div className="flex items-center gap-1">
+                            {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                            {canSort && (
+                              <span className="flex-shrink-0">
+                                {sorted === 'asc'  && <ChevronUp   className="w-3 h-3 text-[#C8FF00]" />}
+                                {sorted === 'desc' && <ChevronDown  className="w-3 h-3 text-[#C8FF00]" />}
+                                {!sorted           && <ChevronsUpDown className="w-3 h-3 opacity-30" />}
+                              </span>
+                            )}
+                          </div>
+                        </th>
+                      )
+                    })}
                   </tr>
                 ))}
               </thead>

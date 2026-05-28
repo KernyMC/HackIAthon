@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import { MessageSquare, X, Send, Minimize2 } from 'lucide-react'
+import { X, Send, Minimize2 } from 'lucide-react'
 import { chat } from '@/lib/api'
 import { MarkdownContent } from '@/components/ui/markdown-content'
 
@@ -15,18 +15,29 @@ const QUICK = [
   '¿Qué documentos faltan en casos críticos?',
 ]
 
+const BUBBLE_SIZE = 56 // w-14 h-14
+
 export default function ChatBubble() {
-  const [open, setOpen]       = useState(false)
-  const [minimized, setMin]   = useState(false)
+  const [open, setOpen]         = useState(false)
+  const [minimized, setMin]     = useState(false)
   const [messages, setMessages] = useState<Msg[]>([
-    { role: 'assistant', content: 'Hola, soy FraudIA. Pregúntame sobre siniestros, proveedores o casos críticos.' },
+    { role: 'assistant', content: 'Hola, soy FraudSweep. Pregúntame sobre siniestros, proveedores o casos críticos.' },
   ])
-  const [input, setInput]     = useState('')
+  const [input, setInput]   = useState('')
   const [loading, setLoading] = useState(false)
-  const [unread, setUnread]   = useState(0)
-  const [sessionId]           = useState(() => `bubble-${Date.now()}`)
-  const bottomRef             = useRef<HTMLDivElement>(null)
-  const inputRef              = useRef<HTMLInputElement>(null)
+  const [unread, setUnread] = useState(0)
+  const [sessionId]         = useState(() => `bubble-${Date.now()}`)
+
+  // ── Drag state (vertical only — always attached to right edge) ────────────
+  const RIGHT_FIXED     = 24
+  const [bottom, setBottom] = useState(24)
+  const [dragging, setDragging] = useState(false)
+  const isDragging      = useRef(false)
+  const hasDragged      = useRef(false)
+  const dragOffsetY     = useRef(0) // cursor offset from button's bottom edge
+
+  const bottomRef  = useRef<HTMLDivElement>(null)
+  const inputRef   = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (open) { setUnread(0); setTimeout(() => inputRef.current?.focus(), 100) }
@@ -36,12 +47,10 @@ export default function ChatBubble() {
     if (open && !minimized) bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, open, minimized])
 
-  // Listen for external trigger (from dashboard "Explicar IA" button via custom event)
+  // External trigger from dashboard "Explicar IA" buttons
   useEffect(() => {
     const handler = (e: CustomEvent<string>) => {
-      setOpen(true)
-      setMin(false)
-      send(e.detail)
+      setOpen(true); setMin(false); send(e.detail)
     }
     window.addEventListener('fraudia:ask' as any, handler)
     return () => window.removeEventListener('fraudia:ask' as any, handler)
@@ -64,17 +73,78 @@ export default function ChatBubble() {
     }
   }
 
-  return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+  // ── Drag handlers (vertical only) ──────────────────────────────────────────
+  const startDrag = useCallback((_clientX: number, clientY: number) => {
+    isDragging.current = true
+    hasDragged.current = false
+    setDragging(true)
+    dragOffsetY.current = window.innerHeight - clientY - bottom
+  }, [bottom])
 
-      {/* ── Chat panel ── */}
+  const moveDrag = useCallback((_clientX: number, clientY: number) => {
+    if (!isDragging.current) return
+    hasDragged.current = true
+    const newBottom = window.innerHeight - clientY - dragOffsetY.current
+    setBottom(Math.max(8, Math.min(window.innerHeight - BUBBLE_SIZE - 8, newBottom)))
+  }, [])
+
+  const endDrag = useCallback(() => {
+    isDragging.current = false
+    setDragging(false)
+  }, [])
+
+  // Global mouse listeners
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => moveDrag(e.clientX, e.clientY)
+    const onUp   = () => endDrag()
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup',   onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup',   onUp)
+    }
+  }, [moveDrag, endDrag])
+
+  // Global touch listeners
+  useEffect(() => {
+    const onMove = (e: TouchEvent) => {
+      const t = e.touches[0]
+      if (t) moveDrag(t.clientX, t.clientY)
+    }
+    const onEnd = () => endDrag()
+    window.addEventListener('touchmove', onMove, { passive: true })
+    window.addEventListener('touchend',  onEnd)
+    return () => {
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend',  onEnd)
+    }
+  }, [moveDrag, endDrag])
+
+  // Click fires only when the user didn't drag
+  const handleBubbleClick = () => {
+    if (hasDragged.current) return
+    setOpen(v => !v)
+    setMin(false)
+  }
+
+  return (
+    <div
+      className="fixed z-50 flex flex-col items-end gap-3"
+      style={{ bottom, right: RIGHT_FIXED }}
+    >
+      {/* ── Chat panel ─────────────────────────────────────────────────────── */}
       {open && (
         <div
           className="flex flex-col bg-[#111111] border border-[#2A2A2A] rounded-2xl shadow-2xl overflow-hidden transition-all duration-200"
           style={{ width: 340, height: minimized ? 52 : 460 }}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-[#0F0F0F] border-b border-[#2A2A2A] flex-shrink-0">
+          {/* Header — drag handle for the panel */}
+          <div
+            className="flex items-center justify-between px-4 py-3 bg-[#0F0F0F] border-b border-[#2A2A2A] flex-shrink-0 cursor-ns-resize select-none"
+            onMouseDown={e => { e.preventDefault(); startDrag(e.clientX, e.clientY) }}
+            onTouchStart={e => { const t = e.touches[0]; if (t) startDrag(t.clientX, t.clientY) }}
+            title="Arrastra para mover"
+          >
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-lg overflow-hidden flex-shrink-0">
                 <Image src="/logo.png" alt="FraudSweep" width={24} height={24} className="w-full h-full object-cover" />
@@ -84,14 +154,16 @@ export default function ChatBubble() {
             </div>
             <div className="flex items-center gap-1.5">
               <button
+                onMouseDown={e => e.stopPropagation()}
                 onClick={() => setMin(v => !v)}
-                className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-[#1C1C1C] transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-[#1C1C1C] transition-colors cursor-pointer"
               >
                 <Minimize2 className="w-3 h-3 text-neutral-500 hover:text-white" />
               </button>
               <button
+                onMouseDown={e => e.stopPropagation()}
                 onClick={() => setOpen(false)}
-                className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-[#1C1C1C] transition-colors"
+                className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-[#1C1C1C] transition-colors cursor-pointer"
               >
                 <X className="w-3 h-3 text-neutral-500 hover:text-white" />
               </button>
@@ -145,7 +217,7 @@ export default function ChatBubble() {
                     key={q}
                     onClick={() => send(q)}
                     disabled={loading}
-                    className="text-left text-[10px] text-neutral-400 hover:text-white bg-[#1A1A1A] hover:bg-[#222] border border-[#2A2A2A] hover:border-[#C8FF00]/20 px-2.5 py-1.5 rounded-lg transition-all disabled:opacity-40"
+                    className="text-left text-[10px] text-neutral-400 hover:text-white bg-[#1A1A1A] hover:bg-[#222] border border-[#2A2A2A] hover:border-[#C8FF00]/20 px-2.5 py-1.5 rounded-lg transition-all disabled:opacity-40 cursor-pointer"
                   >
                     {q}
                   </button>
@@ -168,7 +240,7 @@ export default function ChatBubble() {
               <button
                 onClick={() => send(input)}
                 disabled={loading || !input.trim()}
-                className="w-8 h-8 bg-[#C8FF00] hover:bg-[#d4ff33] disabled:bg-[#1C1C1C] disabled:text-neutral-700 text-black rounded-lg flex items-center justify-center flex-shrink-0 transition-colors"
+                className="w-8 h-8 bg-[#C8FF00] hover:bg-[#d4ff33] disabled:bg-[#1C1C1C] disabled:text-neutral-700 text-black rounded-lg flex items-center justify-center flex-shrink-0 transition-colors cursor-pointer"
               >
                 <Send className="w-3 h-3" />
               </button>
@@ -177,26 +249,33 @@ export default function ChatBubble() {
         </div>
       )}
 
-      {/* ── Bubble button ── */}
+      {/* ── Bubble button ───────────────────────────────────────────────────── */}
       <button
-        onClick={() => { setOpen(v => !v); setMin(false) }}
-        className="relative w-14 h-14 bg-[#0f0f0f] hover:bg-[#161616] border-2 border-[#C8FF00]/60 hover:border-[#C8FF00] text-white rounded-full shadow-2xl flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95"
-        title="Abrir asistente IA"
+        onMouseDown={e => { e.preventDefault(); startDrag(e.clientX, e.clientY) }}
+        onTouchStart={e => { const t = e.touches[0]; if (t) startDrag(t.clientX, t.clientY) }}
+        onMouseUp={handleBubbleClick}
+        onTouchEnd={handleBubbleClick}
+        className={[
+          'relative w-14 h-14 bg-[#0f0f0f] border-2 border-[#C8FF00]/60 text-white rounded-full shadow-2xl',
+          'flex items-center justify-center transition-colors duration-200',
+          'select-none touch-none',
+          dragging ? 'cursor-ns-resize scale-95 border-[#C8FF00]' : 'cursor-ns-resize hover:bg-[#161616] hover:border-[#C8FF00] hover:scale-105',
+        ].join(' ')}
+        title="Arrastra para mover · Click para abrir"
       >
-        {open
+        {open && !dragging
           ? <X className="w-5 h-5 text-[#C8FF00]" />
-          : <Image src="/logo.png" alt="FraudSweep" width={34} height={34} className="rounded-full object-cover" />
+          : <Image src="/logo.png" alt="FraudSweep" width={34} height={34} className="rounded-full object-cover pointer-events-none" />
         }
         {!open && unread > 0 && (
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
             {unread}
           </span>
         )}
-        {!open && (
+        {!open && !dragging && (
           <span className="absolute -top-0.5 -right-0.5 w-3 h-3 bg-[#C8FF00] rounded-full animate-ping opacity-60" />
         )}
       </button>
-
     </div>
   )
 }

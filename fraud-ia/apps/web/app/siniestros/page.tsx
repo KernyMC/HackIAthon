@@ -145,6 +145,9 @@ export default function SiniestrosPage() {
   const [nivelRiesgo, setNivelRiesgo] = useState(() =>
     searchParams.get('estado_revision') === 'En revisión' ? 'revision' : 'all'
   )
+  const [estadoRevision, setEstadoRevision] = useState<string>(() =>
+    searchParams.get('estado_revision') ?? 'todos'
+  )
   const [ramo, setRamo] = useState('')
   const [search, setSearch] = useState('')
   const [scoreMin, setScoreMin] = useState('')
@@ -161,8 +164,8 @@ export default function SiniestrosPage() {
     setError(null)
     try {
       const params: SiniestrosParams = { limit: PAGE_SIZE, offset: pg * PAGE_SIZE }
-      if (nivelRiesgo === 'revision') {
-        params.estado_revision = 'En revisión'
+      if (estadoRevision !== 'todos') {
+        params.estado_revision = estadoRevision
       } else if (nivelRiesgo !== 'all') {
         params.nivel_riesgo = nivelRiesgo
       }
@@ -177,9 +180,9 @@ export default function SiniestrosPage() {
     } finally {
       setLoading(false)
     }
-  }, [nivelRiesgo, ramo, search, scoreMin])
+  }, [nivelRiesgo, estadoRevision, ramo, search, scoreMin])
 
-  useEffect(() => { setPage(0); fetchData(0) }, [nivelRiesgo, ramo, scoreMin])
+  useEffect(() => { setPage(0); fetchData(0) }, [nivelRiesgo, estadoRevision, ramo, scoreMin])
 
   useEffect(() => {
     const timer = setTimeout(() => { setPage(0); fetchData(0) }, 400)
@@ -296,6 +299,28 @@ export default function SiniestrosPage() {
           <Filter className="w-3.5 h-3.5" />
           <span>Filtros</span>
         </div>
+        {/* Tabs estado de revisión */}
+        <div className="flex gap-1 flex-wrap">
+          {[
+            { value: 'todos',       label: 'Todos',        activeColor: 'text-neutral-300' },
+            { value: 'Pendiente',   label: 'Sin revisar',  activeColor: 'text-neutral-400' },
+            { value: 'En revisión', label: 'En revisión',  activeColor: 'text-amber-400'   },
+            { value: 'Aprobado',    label: 'Aprobados',    activeColor: 'text-green-400'   },
+            { value: 'Rechazado',   label: 'Rechazados',   activeColor: 'text-red-400'     },
+          ].map(tab => (
+            <button
+              key={tab.value}
+              onClick={() => { setEstadoRevision(tab.value); setPage(0) }}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                estadoRevision === tab.value
+                  ? `bg-[#1C1C1C] border-[#3A3A3A] ${tab.activeColor}`
+                  : 'bg-[#141414] border-[#2A2A2A] text-neutral-600 hover:text-white hover:border-[#3A3A3A]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
         <div className="w-44">
           <Select value={nivelRiesgo} onValueChange={setNivelRiesgo}>
             <SelectTrigger className="h-8 text-xs bg-[#242424] border-[#333] text-white">
@@ -309,16 +334,6 @@ export default function SiniestrosPage() {
             </SelectContent>
           </Select>
         </div>
-        <button
-          onClick={() => setNivelRiesgo((nivelRiesgo === 'revision' ? 'all' : 'revision') as any)}
-          className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
-            nivelRiesgo === 'revision'
-              ? 'bg-amber-500/20 border-amber-500/40 text-amber-400'
-              : 'bg-[#141414] border-[#2A2A2A] text-neutral-500 hover:text-white hover:border-[#3A3A3A]'
-          }`}
-        >
-          En revisión
-        </button>
         <Input
           placeholder="Ramo..."
           value={ramo}

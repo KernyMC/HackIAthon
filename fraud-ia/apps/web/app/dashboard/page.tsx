@@ -111,14 +111,25 @@ const CLUSTER_META: Record<number, { label: string; color: string }> = {
 }
 
 // ── KPI card ─────────────────────────────────────────────────────────────────
-function KPICard({ label, value, subValue, icon: Icon, accent, pct }: {
-  label: string; value: string; subValue?: string; icon: React.ElementType; accent: string; pct?: number
+function KPICard({ label, value, subValue, icon: Icon, accent, pct, tooltip }: {
+  label: string; value: string; subValue?: string; icon: React.ElementType; accent: string; pct?: number; tooltip?: string
 }) {
   return (
     <div className="h-full rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-4 flex flex-col justify-between hover:border-[#333] transition-colors overflow-hidden relative">
       <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ background: `radial-gradient(circle at 100% 0%, ${accent} 0%, transparent 60%)` }} />
       <div className="flex items-center justify-between mb-1.5">
-        <p className="text-[11px] text-neutral-600 font-semibold uppercase tracking-wider leading-tight">{label}</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-[11px] text-neutral-600 font-semibold uppercase tracking-wider leading-tight">{label}</p>
+          {tooltip && (
+            <Tooltip
+              title={<span style={{ fontSize: 11, lineHeight: 1.5 }}>{tooltip}</span>}
+              placement="right" arrow
+              slotProps={{ tooltip: { sx: { bgcolor: '#1A1A1A', border: '1px solid #3A3A3A', borderRadius: 2, maxWidth: 220, p: 1.5 } }, arrow: { sx: { color: '#1A1A1A' } } }}
+            >
+              <Info className="w-2.5 h-2.5 text-neutral-700 hover:text-neutral-400 cursor-help transition-colors flex-shrink-0" />
+            </Tooltip>
+          )}
+        </div>
         <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${accent}20` }}>
           <Icon className="w-3.5 h-3.5" style={{ color: accent }} />
         </div>
@@ -149,12 +160,17 @@ function Card({ title, children, link, accent, tooltip }: {
           {accent && <div className="w-1 h-4 rounded-full" style={{ background: accent }} />}
           <h2 className="text-[13px] font-semibold text-white">{title}</h2>
           {tooltip && (
-            <div className="group relative flex items-center">
+            <Tooltip
+              title={<span style={{ fontSize: 11, lineHeight: 1.5 }}>{tooltip}</span>}
+              placement="right"
+              arrow
+              slotProps={{
+                tooltip: { sx: { bgcolor: '#1A1A1A', border: '1px solid #3A3A3A', borderRadius: 2, maxWidth: 220, p: 1.5 } },
+                arrow:   { sx: { color: '#1A1A1A' } },
+              }}
+            >
               <Info className="w-3 h-3 text-neutral-600 hover:text-neutral-400 cursor-help transition-colors" />
-              <div className="fixed z-[9999] hidden group-hover:block w-56 bg-[#1A1A1A] border border-[#3A3A3A] text-neutral-300 text-[10px] leading-relaxed rounded-lg px-3 py-2 shadow-2xl pointer-events-none translate-x-2 -translate-y-6">
-                {tooltip}
-              </div>
-            </div>
+            </Tooltip>
           )}
         </div>
         {link && (
@@ -406,7 +422,7 @@ export default function DashboardPage() {
               {/* Total */}
               <div className="grid-stack-item" gs-x={pos('kpi-total').x} gs-y={pos('kpi-total').y} gs-w={pos('kpi-total').w} gs-h={pos('kpi-total').h}>
                 <div className="grid-stack-item-content">
-                  <KPICard label="Total siniestros" value={kpis.total_siniestros.toLocaleString('es-EC')} icon={Activity} accent="#C8FF00" pct={100} />
+                  <KPICard label="Total siniestros" value={kpis.total_siniestros.toLocaleString('es-EC')} icon={Activity} accent="#C8FF00" pct={100} tooltip="Total de siniestros registrados en la base de datos. Incluye todos los niveles de riesgo y estados." />
                 </div>
               </div>
 
@@ -414,7 +430,16 @@ export default function DashboardPage() {
               <div className="grid-stack-item" gs-x={pos('kpi-niveles').x} gs-y={pos('kpi-niveles').y} gs-w={pos('kpi-niveles').w} gs-h={pos('kpi-niveles').h}>
                 <div className="grid-stack-item-content">
                   <div className="h-full rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] px-4 py-3 flex flex-col justify-between hover:border-[#333] transition-colors">
-                    <p className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider">Distribución por nivel de riesgo</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider">Distribución por nivel de riesgo</p>
+                      <Tooltip
+                        title={<span style={{ fontSize: 11, lineHeight: 1.5 }}>Desglose de todos los siniestros en Verde (score 0–39), Amarillo (40–69) y Rojo (70–100). Verde = flujo normal, Rojo = escalar a antifraude.</span>}
+                        placement="right" arrow
+                        slotProps={{ tooltip: { sx: { bgcolor: '#1A1A1A', border: '1px solid #3A3A3A', borderRadius: 2, maxWidth: 220, p: 1.5 } }, arrow: { sx: { color: '#1A1A1A' } } }}
+                      >
+                        <Info className="w-2.5 h-2.5 text-neutral-700 hover:text-neutral-400 cursor-help transition-colors flex-shrink-0" />
+                      </Tooltip>
+                    </div>
                     <div className="flex gap-4 flex-1 items-center">
                       {[
                         { label: 'Verde Bajo',     count: kpis.casos_verdes,    color: '#22c55e', icon: ShieldCheck },
@@ -448,14 +473,14 @@ export default function DashboardPage() {
               {/* Monto */}
               <div className="grid-stack-item" gs-x={pos('kpi-monto').x} gs-y={pos('kpi-monto').y} gs-w={pos('kpi-monto').w} gs-h={pos('kpi-monto').h}>
                 <div className="grid-stack-item-content">
-                  <KPICard label="Monto total" value={formatMoney(kpis.monto_total_reclamado)} icon={DollarSign} accent="#C8FF00" />
+                  <KPICard label="Monto total" value={formatMoney(kpis.monto_total_reclamado)} icon={DollarSign} accent="#C8FF00" tooltip="Suma total de montos reclamados en todos los siniestros, expresado en USD." />
                 </div>
               </div>
 
               {/* Score */}
               <div className="grid-stack-item" gs-x={pos('kpi-score').x} gs-y={pos('kpi-score').y} gs-w={pos('kpi-score').w} gs-h={pos('kpi-score').h}>
                 <div className="grid-stack-item-content">
-                  <KPICard label="Score promedio" value={formatScore(kpis.score_promedio)} subValue="/ 100 pts." icon={TrendingUp} accent="#FF6500" pct={Math.round(kpis.score_promedio)} />
+                  <KPICard label="Score promedio" value={formatScore(kpis.score_promedio)} subValue="/ 100 pts." icon={TrendingUp} accent="#FF6500" pct={Math.round(kpis.score_promedio)} tooltip="Score de riesgo promedio de todos los siniestros. Calculado como 60% reglas + 40% modelo simulado. Escala de 0 a 100." />
                 </div>
               </div>
             </>)}
@@ -647,7 +672,7 @@ export default function DashboardPage() {
             {/* ── SparkLine — tendencia mensual ─────────────────────────── */}
             <div className="grid-stack-item" gs-x={pos('sparkline').x} gs-y={pos('sparkline').y} gs-w={pos('sparkline').w} gs-h={pos('sparkline').h}>
               <div className="grid-stack-item-content">
-                <Card title="Tendencia Mensual · Siniestros" accent="#C8FF00">
+                <Card title="Tendencia Mensual · Siniestros" accent="#C8FF00" tooltip="Evolución mensual del número de siniestros reportados. Permite identificar estacionalidad o picos de fraude en el tiempo.">
                   <div
                     role="button" tabIndex={0} className="outline-none h-full flex flex-col justify-between"
                     onKeyDown={e => {
@@ -706,7 +731,7 @@ export default function DashboardPage() {
             {/* ── Heatmap — score por ciudad × ramo ────────────────────── */}
             <div className="grid-stack-item" gs-x={pos('heatmap').x} gs-y={pos('heatmap').y} gs-w={pos('heatmap').w} gs-h={pos('heatmap').h}>
               <div className="grid-stack-item-content">
-                <Card title="Score Promedio · Ciudad × Ramo" accent="#a855f7">
+                <Card title="Score Promedio · Ciudad × Ramo" accent="#a855f7" tooltip="Score de riesgo promedio cruzado por ciudad y ramo. Ciudades con mayor valor concentran más siniestros de alto riesgo.">
                   {heatmapData.ciudades.length > 0 && (
                     <CustomHeatmap
                       ciudades={heatmapData.ciudades}
@@ -721,7 +746,7 @@ export default function DashboardPage() {
             {/* ── RadialBarChart — alertas mensuales ───────────────────── */}
             <div className="grid-stack-item" gs-x={pos('radialbar').x} gs-y={pos('radialbar').y} gs-w={pos('radialbar').w} gs-h={pos('radialbar').h}>
               <div className="grid-stack-item-content">
-                <Card title="Alertas por Nivel · Distribución Mensual" accent="#ef4444">
+                <Card title="Alertas por Nivel · Distribución Mensual" accent="#ef4444" tooltip="Distribución mensual de alertas activadas agrupadas por nivel de riesgo. Muestra si hay incremento de casos críticos.">
                   {monthTotals.length > 0 && (
                     <BarChart
                       xAxis={[{ scaleType: 'band', data: monthLabels, tickLabelStyle: { fill: '#4a4a4a', fontSize: 8 } }]}
@@ -792,12 +817,13 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2.5">
                       <div className="w-1 h-4 rounded-full bg-orange-500" />
                       <h2 className="text-[11px] font-semibold text-white">Narrativas Similares Detectadas · RF-07</h2>
-                      <div className="group relative flex items-center">
+                      <Tooltip
+                        title={<span style={{ fontSize: 11, lineHeight: 1.5 }}>Pares de siniestros con descripciones casi idénticas detectadas por TF-IDF coseno. Activa la regla RF-07 que puede indicar fraude coordinado.</span>}
+                        placement="right" arrow
+                        slotProps={{ tooltip: { sx: { bgcolor: '#1A1A1A', border: '1px solid #3A3A3A', borderRadius: 2, maxWidth: 220, p: 1.5 } }, arrow: { sx: { color: '#1A1A1A' } } }}
+                      >
                         <Info className="w-3 h-3 text-neutral-600 hover:text-neutral-400 cursor-help transition-colors" />
-                        <div className="fixed z-[9999] hidden group-hover:block w-56 bg-[#1A1A1A] border border-[#3A3A3A] text-neutral-300 text-[10px] leading-relaxed rounded-lg px-3 py-2 shadow-2xl pointer-events-none translate-x-2 -translate-y-6">
-                          Pares de siniestros con descripciones casi idénticas detectadas por TF-IDF coseno. Activa la regla RF-07 que puede indicar fraude coordinado.
-                        </div>
-                      </div>
+                      </Tooltip>
                       {narrativas && narrativas.resumen.total_pares > 0 && (
                         <Chip
                           label={`${narrativas.resumen.total_clusters} redes · ${narrativas.resumen.casos_involucrados} casos`}
@@ -992,12 +1018,13 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2">
                       <UserCheck className="w-4 h-4 text-amber-400" />
                       <span className="text-[13px] font-semibold text-white">Cola de Revisión Humana</span>
-                      <div className="group relative flex items-center">
+                      <Tooltip
+                        title={<span style={{ fontSize: 11, lineHeight: 1.5 }}>Siniestros enviados a revisión humana con el analista asignado automáticamente por ramo.</span>}
+                        placement="right" arrow
+                        slotProps={{ tooltip: { sx: { bgcolor: '#1A1A1A', border: '1px solid #3A3A3A', borderRadius: 2, maxWidth: 220, p: 1.5 } }, arrow: { sx: { color: '#1A1A1A' } } }}
+                      >
                         <Info className="w-3 h-3 text-neutral-600 hover:text-neutral-400 cursor-help transition-colors" />
-                        <div className="fixed z-[9999] hidden group-hover:block w-56 bg-[#1A1A1A] border border-[#3A3A3A] text-neutral-300 text-[10px] leading-relaxed rounded-lg px-3 py-2 shadow-2xl pointer-events-none translate-x-2 -translate-y-6">
-                          Siniestros enviados a revisión humana con el analista asignado automáticamente por ramo.
-                        </div>
-                      </div>
+                      </Tooltip>
                     </div>
                     <span className="text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
                       {cola.length} casos

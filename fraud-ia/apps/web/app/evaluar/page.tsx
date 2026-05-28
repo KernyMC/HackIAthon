@@ -275,6 +275,17 @@ export default function EvaluarPage() {
 
             {result && cfg && (
               <div className={`border rounded-2xl p-6 space-y-5 ${cfg.bg}`}>
+                {/* Siniestro ID */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-neutral-500">Caso registrado</span>
+                  <a
+                    href={`/siniestros/${result.id_siniestro}`}
+                    className="text-xs font-mono font-bold text-[#C8FF00] hover:underline"
+                  >
+                    {result.id_siniestro} →
+                  </a>
+                </div>
+
                 {/* Score header */}
                 <div className="flex items-center gap-3">
                   <cfg.Icon className="w-8 h-8" style={{ color: cfg.color }} />

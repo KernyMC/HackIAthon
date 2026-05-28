@@ -338,3 +338,42 @@ def generar_resumen_ejecutivo() -> dict:
         return {"tool": "generar_resumen_ejecutivo", "error": str(e)}
     finally:
         db.close()
+
+
+def leer_documento_peritaje(doc_id: str) -> dict:
+    """
+    Lee el contenido completo de un peritaje o informe indexado en el RAG,
+    buscando directamente por su identificador (ej: peritaje_afa60599).
+    Usar cuando el analista pregunta por un documento específico subido al sistema.
+    """
+    db = _get_db()
+    try:
+        rows = db.execute(
+            text("""
+                SELECT section, chunk_text
+                FROM rag.business_chunks
+                WHERE source_name = :doc_id
+                ORDER BY section
+            """),
+            {"doc_id": doc_id},
+        ).mappings().all()
+
+        if not rows:
+            return {
+                "tool": "leer_documento_peritaje",
+                "doc_id": doc_id,
+                "error": f"No se encontró ningún documento con id '{doc_id}'. Verifica que el PDF fue indexado correctamente.",
+            }
+
+        texto_completo = "\n\n".join(f"[{r['section']}]\n{r['chunk_text']}" for r in rows)
+        return {
+            "tool": "leer_documento_peritaje",
+            "doc_id": doc_id,
+            "chunks": len(rows),
+            "contenido": texto_completo,
+        }
+    except Exception as e:
+        logger.error(f"leer_documento_peritaje error: {e}")
+        return {"tool": "leer_documento_peritaje", "error": str(e)}
+    finally:
+        db.close()

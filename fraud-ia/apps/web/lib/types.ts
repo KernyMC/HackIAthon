@@ -162,6 +162,7 @@ export interface NarrativasSimilaresResponse {
 }
 
 export interface EvaluarResult {
+  id_siniestro: string
   score_reglas: number
   score_final: number
   nivel_riesgo: 'Verde Bajo' | 'Amarillo Medio' | 'Rojo Alto'

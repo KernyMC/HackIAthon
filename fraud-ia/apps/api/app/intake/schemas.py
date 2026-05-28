@@ -15,6 +15,7 @@ class NuevoSiniestroInput(BaseModel):
 
 
 class EvaluacionResult(BaseModel):
+    id_siniestro: str
     score_reglas: float
     score_final: float
     nivel_riesgo: str          # Verde Bajo | Amarillo Medio | Rojo Alto

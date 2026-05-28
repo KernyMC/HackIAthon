@@ -14,6 +14,7 @@ from .tools import (
     listar_casos_cerca_inicio_poliza,
     generar_resumen_ejecutivo,
     listar_narrativas_similares,
+    leer_documento_peritaje,
 )
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ TOOLS = [
     listar_casos_cerca_inicio_poliza,
     generar_resumen_ejecutivo,
     listar_narrativas_similares,
+    leer_documento_peritaje,
 ]
 
 _agent = None
@@ -161,7 +163,11 @@ Responde en español de manera clara y profesional para un analista de seguros.
 def _dispatch_tool_by_keyword(message: str) -> dict:
     msg_lower = message.lower()
 
-    if any(k in msg_lower for k in ["narrativa", "similar", "fraude coordinado", "taller cómplice", "taller complice", "clonada", "rf-07", "rf07", "anillo"]):
+    import re as _re
+    peritaje_match = _re.search(r'peritaje_[a-f0-9]+', msg_lower)
+    if peritaje_match:
+        return leer_documento_peritaje(peritaje_match.group(0))
+    elif any(k in msg_lower for k in ["narrativa", "similar", "fraude coordinado", "taller cómplice", "taller complice", "clonada", "rf-07", "rf07", "anillo"]):
         return listar_narrativas_similares()
     elif any(k in msg_lower for k in ["proveedor", "taller", "clínica", "clinica"]):
         return analizar_proveedores_alertas()
@@ -193,6 +199,7 @@ def _build_citations(tools_used: list) -> list:
         "listar_casos_cerca_inicio_poliza": {"type": "sql", "source": "claims.siniestros"},
         "generar_resumen_ejecutivo": {"type": "sql_view", "source": "claims.v_kpis"},
         "listar_narrativas_similares": {"type": "sql", "source": "claims.narrativas_similares"},
+        "leer_documento_peritaje": {"type": "rag", "source": "rag.business_chunks"},
     }
     return [citation_map[t] for t in tools_used if t in citation_map]
 

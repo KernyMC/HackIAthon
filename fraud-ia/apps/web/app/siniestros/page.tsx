@@ -14,6 +14,7 @@ import {
   Search, ChevronLeft, ChevronRight, ChevronUp, ChevronDown,
   ChevronsUpDown, RefreshCw, AlertTriangle, Filter, MessageSquare,
 } from 'lucide-react'
+import Image from 'next/image'
 import { getSiniestros, getKpis } from '@/lib/api'
 import type { Siniestro, SiniestrosParams, KPIs } from '@/lib/types'
 import { formatMoney, formatScore, truncate } from '@/lib/utils'
@@ -210,9 +211,16 @@ export default function SiniestrosPage() {
         </div>
         <button
           onClick={() => askAI('¿Cuáles son los 10 siniestros con mayor riesgo de fraude?')}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#C8FF00] hover:bg-[#d4ff33] text-black font-semibold rounded-xl text-sm transition-colors"
+          className="flex items-center gap-2 px-5 py-2.5 bg-[#C8FF00] hover:bg-[#d4ff33] text-black font-bold rounded-xl text-sm transition-colors cursor-pointer"
         >
-          <MessageSquare className="w-4 h-4" />
+          <Image
+            src="/logo.png"
+            alt="FraudSweep"
+            width={20}
+            height={20}
+            className="rounded-sm"
+            style={{ filter: 'brightness(0)' }}
+          />
           Analizar con IA
         </button>
       </div>
@@ -257,9 +265,9 @@ export default function SiniestrosPage() {
               border: 'border-[#C8FF00]/20',
             },
           ].map(({ label, value, color, bg, border }) => (
-            <div key={label} className={`rounded-xl ${bg} border ${border} px-4 py-3 text-center`}>
-              <p className="text-[10px] text-neutral-600 uppercase tracking-wider mb-1">{label}</p>
-              <p className="text-lg font-bold tabular-nums" style={{ color }}>{value}</p>
+            <div key={label} className={`rounded-2xl ${bg} border ${border} px-5 py-5 text-center`}>
+              <p className="text-xs font-semibold text-white uppercase tracking-widest mb-2">{label}</p>
+              <p className="text-4xl font-black tabular-nums leading-none" style={{ color }}>{value}</p>
             </div>
           ))}
         </div>

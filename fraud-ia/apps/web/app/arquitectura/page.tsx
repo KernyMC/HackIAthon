@@ -1,538 +1,355 @@
-'use client'
+import { AlertTriangle, ArrowRight, Database, Zap, Globe, Bot, Server, Shield } from 'lucide-react'
 
-import * as React from 'react'
-import { ThemeProvider, createTheme } from '@mui/material/styles'
-import { Gauge, gaugeClasses } from '@mui/x-charts/Gauge'
-import { SparkLineChart } from '@mui/x-charts/SparkLineChart'
-import { lineClasses } from '@mui/x-charts/LineChart'
-import { chartsAxisHighlightClasses } from '@mui/x-charts/ChartsAxisHighlight'
-import { PieChart, pieClasses } from '@mui/x-charts/PieChart'
-import { useDrawingArea } from '@mui/x-charts/hooks'
-import { styled } from '@mui/material/styles'
-import { BarChart } from '@mui/x-charts/BarChart'
-import { RefreshCw, AlertTriangle } from 'lucide-react'
-import { getKpis, getSiniestros } from '@/lib/api'
-import type { KPIs, Siniestro } from '@/lib/types'
-import { formatScore } from '@/lib/utils'
+// ── Inline SVG logos ─────────────────────────────────────────────────────────
 
-// ── Dark MUI theme ──────────────────────────────────────────────────────────
-const dark = createTheme({
-  palette: {
-    mode: 'dark',
-    background: { default: '#111111', paper: '#1C1C1C' },
-    text: { primary: '#fff', secondary: '#888' },
+const NextjsLogo = () => (
+  <svg viewBox="0 0 180 180" className="w-full h-full" aria-label="Next.js">
+    <circle cx="90" cy="90" r="90" fill="#000" />
+    <path
+      d="M149.508 157.52L69.142 54H54v71.97h12.114V69.384l73.303 95.131a90.76 90.76 0 0010.09-7Z"
+      fill="url(#nxt-a)"
+    />
+    <rect x="108" y="54" width="12" height="72" fill="url(#nxt-b)" />
+    <defs>
+      <linearGradient id="nxt-a" x1="109" y1="116.5" x2="144.5" y2="160.5" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#fff" /><stop offset="1" stopColor="#fff" stopOpacity="0" />
+      </linearGradient>
+      <linearGradient id="nxt-b" x1="108" y1="54" x2="108.5" y2="106.5" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#fff" /><stop offset="1" stopColor="#fff" stopOpacity="0" />
+      </linearGradient>
+    </defs>
+  </svg>
+)
+
+const TypeScriptLogo = () => (
+  <svg viewBox="0 0 100 100" className="w-full h-full" aria-label="TypeScript">
+    <rect width="100" height="100" rx="8" fill="#3178C6" />
+    <path d="M56 71.4v7.5c1.2.6 2.7 1.1 4.4 1.4 1.7.3 3.5.5 5.4.5 1.9 0 3.7-.2 5.4-.6 1.7-.4 3.1-1 4.4-1.9 1.2-.9 2.2-2 2.9-3.4.7-1.4 1.1-3.1 1.1-5.1 0-1.5-.2-2.8-.7-3.9-.5-1.1-1.2-2.1-2-3s-1.9-1.7-3-2.4c-1.2-.7-2.4-1.4-3.8-2l-3.2-1.3c-.9-.4-1.7-.7-2.3-1.1-.6-.4-1.1-.7-1.5-1.1-.4-.4-.7-.8-.9-1.2-.2-.5-.3-1-.3-1.6 0-.6.1-1.1.3-1.5.2-.4.5-.8.9-1.1.4-.3.9-.6 1.5-.7.6-.2 1.3-.3 2-.3 1.4 0 2.8.2 4.2.7 1.4.5 2.7 1.2 3.8 2.2V47c-1.1-.8-2.4-1.4-3.8-1.8-1.4-.4-2.9-.6-4.6-.6-1.8 0-3.5.2-5 .7s-2.8 1.1-3.9 2c-1.1.9-1.9 1.9-2.5 3.2-.6 1.2-.9 2.6-.9 4.1 0 2.7.8 5 2.4 6.7 1.6 1.8 4 3.2 7.2 4.4l3.3 1.3c2.3.9 3.9 1.8 4.7 2.7.8.9 1.2 2 1.2 3.3 0 .6-.1 1.2-.4 1.7-.3.5-.7 1-1.2 1.4-.5.4-1.1.7-1.8.9-.7.2-1.5.3-2.4.3-1.7 0-3.4-.4-5-1.1-1.6-.7-3-1.8-4.2-3.1zM38 46.4h12V40H18v6.4h12V80h8V46.4z" fill="#fff" />
+  </svg>
+)
+
+const TailwindLogo = () => (
+  <svg viewBox="0 0 54 33" className="w-full h-full" aria-label="Tailwind CSS">
+    <path fillRule="evenodd" clipRule="evenodd"
+      d="M27 0C19.8 0 15.3 3.6 13.5 10.8c2.7-3.6 5.85-4.95 9.45-4.05 2.054.513 3.522 2.004 5.147 3.653C30.744 12.716 33.808 16 40.5 16c7.2 0 11.7-3.6 13.5-10.8-2.7 3.6-5.85 4.95-9.45 4.05-2.054-.513-3.522-2.004-5.147-3.653C37.256 3.284 34.192 0 27 0zM13.5 16C6.3 16 1.8 19.6 0 26.8c2.7-3.6 5.85-4.95 9.45-4.05 2.054.514 3.522 2.004 5.147 3.653C16.744 28.716 19.808 32 26.5 32c7.2 0 11.7-3.6 13.5-10.8-2.7 3.6-5.85 4.95-9.45 4.05-2.054-.513-3.522-2.004-5.147-3.653C23.756 19.284 20.692 16 13.5 16z"
+      fill="#38BDF8"
+    />
+  </svg>
+)
+
+const PythonLogo = () => (
+  <svg viewBox="0 0 110 110" className="w-full h-full" aria-label="Python">
+    <path d="M54.9 4.4c-26.4 0-24.8 11.4-24.8 11.4l.03 11.8h25.2v3.5H21.5S4.6 29.3 4.6 55.9c0 26.6 14.7 25.6 14.7 25.6h8.8v-12.3s-.5-14.7 14.5-14.7h24.9s14 .2 14-13.5V18.2s2.1-13.8-26.6-13.8zM41 12.3a4.3 4.3 0 110 8.6 4.3 4.3 0 010-8.6z" fill="#387EB8"/>
+    <path d="M55.5 105.6c26.4 0 24.8-11.5 24.8-11.5l-.03-11.8H55.1v-3.5h34.1s16.9 1.8 16.9-24.8c0-26.6-14.7-25.6-14.7-25.6h-8.8v12.3s.5 14.7-14.5 14.7H43.2s-14-.2-14 13.5v21.8s-2.1 13.9 26.3 13.9zm13.7-8.1a4.3 4.3 0 110-8.6 4.3 4.3 0 010 8.6z" fill="#FFE052"/>
+  </svg>
+)
+
+const FastAPILogo = () => (
+  <svg viewBox="0 0 100 100" className="w-full h-full" aria-label="FastAPI">
+    <circle cx="50" cy="50" r="50" fill="#009688" />
+    <path d="M54 18L26 54h24l-4 28 28-36H50l4-28z" fill="#fff" />
+  </svg>
+)
+
+const GeminiLogo = () => (
+  <svg viewBox="0 0 100 100" className="w-full h-full" aria-label="Gemini">
+    <defs>
+      <linearGradient id="gem-g" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#4285F4"/>
+        <stop offset="33%" stopColor="#9B72CB"/>
+        <stop offset="66%" stopColor="#D96570"/>
+        <stop offset="100%" stopColor="#D96570"/>
+      </linearGradient>
+    </defs>
+    <path
+      d="M50 8C50 8 56 32 74 50C56 68 50 92 50 92C50 92 44 68 26 50C44 32 50 8 50 8Z"
+      fill="url(#gem-g)"
+    />
+    <path
+      d="M50 25C50 25 58.5 40 70 50C58.5 60 50 75 50 75C50 75 41.5 60 30 50C41.5 40 50 25 50 25Z"
+      fill="black" opacity="0.15"
+    />
+  </svg>
+)
+
+const PostgresLogo = () => (
+  <svg viewBox="0 0 100 100" className="w-full h-full" aria-label="PostgreSQL">
+    <circle cx="50" cy="50" r="50" fill="#336791" />
+    <text x="50" y="68" textAnchor="middle" fontSize="52" fontWeight="bold" fill="#fff" fontFamily="serif">
+      Pg
+    </text>
+  </svg>
+)
+
+const AlloyDBLogo = () => (
+  <svg viewBox="0 0 100 100" className="w-full h-full" aria-label="AlloyDB">
+    <defs>
+      <linearGradient id="alloy-g" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#4285F4"/>
+        <stop offset="100%" stopColor="#34A853"/>
+      </linearGradient>
+    </defs>
+    <rect width="100" height="100" rx="16" fill="url(#alloy-g)" />
+    <ellipse cx="50" cy="34" rx="26" ry="10" fill="rgba(255,255,255,0.9)" />
+    <rect x="24" y="34" width="52" height="32" fill="rgba(255,255,255,0.15)" />
+    <ellipse cx="50" cy="66" rx="26" ry="10" fill="rgba(255,255,255,0.7)" />
+    <path d="M24 34 Q50 28 76 34 L76 66 Q50 72 24 66Z" fill="rgba(255,255,255,0.08)" />
+  </svg>
+)
+
+const CloudRunLogo = () => (
+  <svg viewBox="0 0 100 100" className="w-full h-full" aria-label="Cloud Run">
+    <defs>
+      <linearGradient id="cr-g" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#4285F4"/>
+        <stop offset="100%" stopColor="#1565C0"/>
+      </linearGradient>
+    </defs>
+    <rect width="100" height="100" rx="16" fill="url(#cr-g)" />
+    <path d="M30 70 L50 20 L70 70 L58 70 L50 48 L42 70Z" fill="#fff" opacity="0.9" />
+    <rect x="35" y="72" width="30" height="6" rx="3" fill="#fff" opacity="0.5" />
+  </svg>
+)
+
+const GoogleADKLogo = () => (
+  <svg viewBox="0 0 100 100" className="w-full h-full" aria-label="Google ADK">
+    <rect width="100" height="100" rx="16" fill="#202124" />
+    <text x="50" y="40" textAnchor="middle" fontSize="16" fill="#4285F4" fontWeight="bold" fontFamily="sans-serif">ADK</text>
+    <circle cx="50" cy="60" r="14" fill="none" stroke="#34A853" strokeWidth="3" />
+    <circle cx="50" cy="60" r="6" fill="#EA4335" />
+    <line x1="50" y1="46" x2="50" y2="38" stroke="#FBBC05" strokeWidth="2.5" strokeLinecap="round" />
+    <line x1="64" y1="60" x2="72" y2="60" stroke="#4285F4" strokeWidth="2.5" strokeLinecap="round" />
+    <line x1="36" y1="60" x2="28" y2="60" stroke="#4285F4" strokeWidth="2.5" strokeLinecap="round" />
+    <line x1="50" y1="74" x2="50" y2="82" stroke="#FBBC05" strokeWidth="2.5" strokeLinecap="round" />
+  </svg>
+)
+
+// ── Data ─────────────────────────────────────────────────────────────────────
+
+const STACK = [
+  {
+    title: 'Frontend',
+    color: '#3b82f6',
+    border: 'border-blue-500/20',
+    bg: 'bg-blue-500/5',
+    logo: NextjsLogo,
+    secondaryLogos: [TypeScriptLogo, TailwindLogo],
+    items: ['Next.js 15 App Router', 'TypeScript strict', 'Tailwind CSS dark', 'TanStack Table v8', 'MUI X Charts v9', 'shadcn/ui'],
   },
-})
-
-// ── Gauge center label ──────────────────────────────────────────────────────
-function GaugeCenter({ value }: { value: number }) {
-  const { width, height, left, top } = useDrawingArea()
-  return (
-    <>
-      <text x={left + width / 2} y={top + height / 2 - 12}
-        textAnchor="middle" dominantBaseline="central"
-        style={{ fill: '#C8FF00', fontSize: 30, fontWeight: 700 }}>
-        {value}
-      </text>
-      <text x={left + width / 2} y={top + height / 2 + 14}
-        textAnchor="middle" dominantBaseline="central"
-        style={{ fill: '#666', fontSize: 11 }}>
-        / 100 pts.
-      </text>
-    </>
-  )
-}
-
-// ── Pie center label ────────────────────────────────────────────────────────
-const StyledPieLabel = styled('text')(() => ({
-  fill: '#666', textAnchor: 'middle', dominantBaseline: 'central', fontSize: 11,
-}))
-function PieCenterLabel({ children }: { children: React.ReactNode }) {
-  const { width, height, left, top } = useDrawingArea()
-  return <StyledPieLabel x={left + width / 2} y={top + height / 2}>{children}</StyledPieLabel>
-}
-
-// ── Static sections ─────────────────────────────────────────────────────────
-const stackSections = [
-  { title: 'Frontend',        color: '#3b82f6', items: ['Next.js 15 + TypeScript','Tailwind CSS dark','TanStack Table','MUI X Charts v9','shadcn/ui'] },
-  { title: 'Backend API',     color: '#a855f7', items: ['Python 3.11 + FastAPI','SQLAlchemy 2.x ORM','psycopg 3','Pydantic v2','Uvicorn ASGI'] },
-  { title: 'Agente IA',       color: '#22c55e', items: ['Google ADK','Gemini 2.5 Flash','7 function tools','RAG + SQL','Español nativo'] },
-  { title: 'Infraestructura', color: '#FF6500', items: ['AlloyDB PostgreSQL 16','vector 768d','Cloud Run (x2)','Artifact Registry','Secret Manager'] },
-]
-const agentTools = [
-  { name: 'buscar_conocimiento_negocio',                type: 'RAG',     desc: 'Base vectorial: reglas, glosario, ética' },
-  { name: 'listar_siniestros_mayor_riesgo',             type: 'SQL',     desc: 'Top N por score_final con alertas' },
-  { name: 'explicar_siniestro',                         type: 'SQL+RAG', desc: 'Detalle completo + docs + proveedor' },
-  { name: 'analizar_proveedores_alertas',               type: 'SQL',     desc: 'Ranking por concentración de Rojo Alto' },
-  { name: 'listar_documentos_faltantes_casos_criticos', type: 'SQL',     desc: 'Docs faltantes en casos críticos' },
-  { name: 'listar_casos_cerca_inicio_poliza',           type: 'SQL',     desc: 'Siniestros en primeros 90 días' },
-  { name: 'generar_resumen_ejecutivo',                  type: 'SQL',     desc: 'KPIs + top casos + recomendaciones' },
+  {
+    title: 'Backend API',
+    color: '#a855f7',
+    border: 'border-purple-500/20',
+    bg: 'bg-purple-500/5',
+    logo: FastAPILogo,
+    secondaryLogos: [PythonLogo],
+    items: ['Python 3.11', 'FastAPI async', 'SQLAlchemy 2.x ORM', 'psycopg 3', 'Pydantic v2', 'Uvicorn ASGI'],
+  },
+  {
+    title: 'Agente IA',
+    color: '#22c55e',
+    border: 'border-green-500/20',
+    bg: 'bg-green-500/5',
+    logo: GeminiLogo,
+    secondaryLogos: [GoogleADKLogo],
+    items: ['Google ADK', 'Gemini 2.5 Flash', '7 function tools', 'RAG 768D vectors', 'Español nativo', 'gemini-embedding-001'],
+  },
+  {
+    title: 'Infraestructura',
+    color: '#FF6500',
+    border: 'border-orange-500/20',
+    bg: 'bg-orange-500/5',
+    logo: AlloyDBLogo,
+    secondaryLogos: [PostgresLogo, CloudRunLogo],
+    items: ['AlloyDB PostgreSQL 16', 'Vector Search 768D', 'Cloud Run (x2)', 'Artifact Registry', 'Secret Manager', 'Esquemas: claims / rag / app'],
+  },
 ]
 
-// ── Custom Heatmap ───────────────────────────────────────────────────────────
-function CustomHeatmap({ ciudades, ramos, data }: {
-  ciudades: string[]; ramos: string[]; data: Array<{ x: number; y: number; v: number }>
-}) {
-  const lerp = (a: number, b: number, t: number) => Math.round(a + (b - a) * t)
-  const getColor = (v: number) => {
-    const t = Math.max(0, Math.min(1, (v - 15) / 65))
-    return `rgb(${lerp(34, 239, t)},${lerp(197, 68, t)},${lerp(94, 68, t)})`
-  }
+const TOOLS = [
+  { name: 'buscar_conocimiento_negocio',                type: 'RAG',     color: '#22c55e', border: 'border-green-800',  bg: 'bg-green-900/30',  desc: 'Base vectorial: reglas, glosario, ética' },
+  { name: 'listar_siniestros_mayor_riesgo',             type: 'SQL',     color: '#3b82f6', border: 'border-blue-800',   bg: 'bg-blue-900/30',   desc: 'Top N por score_final con alertas' },
+  { name: 'explicar_siniestro',                         type: 'SQL+RAG', color: '#a855f7', border: 'border-purple-800', bg: 'bg-purple-900/30', desc: 'Detalle completo + documentos + proveedor' },
+  { name: 'analizar_proveedores_alertas',               type: 'SQL',     color: '#3b82f6', border: 'border-blue-800',   bg: 'bg-blue-900/30',   desc: 'Ranking por concentración de Rojo Alto' },
+  { name: 'listar_documentos_faltantes_casos_criticos', type: 'SQL',     color: '#3b82f6', border: 'border-blue-800',   bg: 'bg-blue-900/30',   desc: 'Docs faltantes en casos críticos' },
+  { name: 'listar_casos_cerca_inicio_poliza',           type: 'SQL',     color: '#3b82f6', border: 'border-blue-800',   bg: 'bg-blue-900/30',   desc: 'Siniestros en primeros 90 días de póliza' },
+  { name: 'generar_resumen_ejecutivo',                  type: 'SQL',     color: '#eab308', border: 'border-yellow-800', bg: 'bg-yellow-900/30', desc: 'KPIs globales + top casos + recomendaciones' },
+]
+
+const FLOW = [
+  { icon: Globe,    label: 'Next.js 15',    sub: 'Frontend',       color: '#3b82f6' },
+  { icon: Server,   label: 'FastAPI',       sub: 'Backend API',    color: '#a855f7' },
+  { icon: Bot,      label: 'Gemini ADK',    sub: 'Agente IA',      color: '#22c55e' },
+  { icon: Database, label: 'AlloyDB',       sub: 'Vector + SQL',   color: '#FF6500' },
+  { icon: Shield,   label: 'FraudSweep',    sub: 'Analista humano',color: '#C8FF00' },
+]
+
+// ── Page ─────────────────────────────────────────────────────────────────────
+
+export default function ArquitecturaPage() {
   return (
-    <div className="w-full overflow-auto">
-      <div className="inline-grid gap-0.5" style={{ gridTemplateColumns: `60px repeat(${ciudades.length}, 1fr)`, width: '100%' }}>
-        <div />
-        {ciudades.map(c => (
-          <div key={c} className="text-[9px] text-neutral-500 text-center truncate px-0.5 pb-1">{c}</div>
-        ))}
-        {ramos.map((ramo, ry) => (
-          <React.Fragment key={ramo}>
-            <div className="text-[9px] text-neutral-500 flex items-center truncate pr-1">{ramo.slice(0, 14)}</div>
-            {ciudades.map((_, cx) => {
-              const cell = data.find(d => d.x === cx && d.y === ry)
-              const v = cell?.v ?? 0
+    <div className="bg-[#111111] min-h-screen p-8">
+
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div className="mb-10">
+        <p className="text-xs font-bold text-neutral-600 uppercase tracking-widest mb-1">Sistema</p>
+        <h1 className="text-5xl font-black text-white leading-none tracking-tight uppercase">Arquitectura</h1>
+        <p className="text-neutral-500 mt-2">FraudSweep Claims Assistant · Stack Tecnológico & Herramientas del Agente</p>
+      </div>
+
+      {/* ── Flow diagram ───────────────────────────────────────────────────── */}
+      <div className="mb-10">
+        <p className="text-xs font-bold text-neutral-600 uppercase tracking-widest mb-4">Flujo del sistema</p>
+        <div className="rounded-2xl border border-[#2A2A2A] bg-[#0f0f0f] p-6">
+          <div className="flex items-center justify-between gap-2">
+            {FLOW.map((node, i) => {
+              const Icon = node.icon
               return (
-                <div
-                  key={`${cx}-${ry}`}
-                  className="rounded flex items-center justify-center text-[10px] font-bold"
-                  style={{ height: 38, background: v > 0 ? getColor(v) : '#1A1A1A', color: '#fff', opacity: v > 0 ? 0.85 : 0.4 }}
-                  title={`${ramo} · ${ciudades[cx]}: ${v}`}
-                >
-                  {v > 0 ? v : '—'}
+                <div key={node.label} className="flex items-center gap-2 flex-1">
+                  <div className="flex-1 flex flex-col items-center gap-2">
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
+                      style={{ background: `${node.color}15`, border: `1px solid ${node.color}30` }}
+                    >
+                      <Icon className="w-6 h-6" style={{ color: node.color }} />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-bold text-white leading-tight">{node.label}</p>
+                      <p className="text-[10px] text-neutral-600 mt-0.5">{node.sub}</p>
+                    </div>
+                  </div>
+                  {i < FLOW.length - 1 && (
+                    <ArrowRight className="w-5 h-5 text-neutral-700 flex-shrink-0 mb-5" />
+                  )}
                 </div>
               )
             })}
-          </React.Fragment>
-        ))}
-      </div>
-      <div className="flex items-center justify-center gap-2 mt-2">
-        <div className="w-14 h-2 rounded" style={{ background: 'linear-gradient(to right, #22c55e, #ef4444)' }} />
-        <span className="text-[9px] text-neutral-600">Score bajo → alto</span>
-      </div>
-    </div>
-  )
-}
-
-const NIVEL_COLORS: Record<string, string> = {
-  'Verde Bajo': '#22c55e', 'Amarillo Medio': '#eab308', 'Rojo Alto': '#ef4444',
-}
-
-// ── Page ────────────────────────────────────────────────────────────────────
-export default function ArquitecturaPage() {
-  const [kpis, setKpis]           = React.useState<KPIs | null>(null)
-  const [siniestros, setSiniestros] = React.useState<Siniestro[]>([])
-  const [loading, setLoading]     = React.useState(true)
-  const [error, setError]         = React.useState<string | null>(null)
-  const [semIdx, setSemIdx]       = React.useState<number | null>(null)
-
-  React.useEffect(() => {
-    Promise.all([getKpis(), getSiniestros({ limit: 1000, offset: 0 })])
-      .then(([k, s]) => { setKpis(k); setSiniestros(s.items) })
-      .catch(e => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [])
-
-  // ── Derived data ──────────────────────────────────────────────────────────
-
-  // Monthly groups for SparkLine + RadialBar
-  const monthlyGroups = React.useMemo(() => {
-    const map: Record<string, { total: number; rojos: number; amarillos: number; verdes: number }> = {}
-    siniestros.forEach(s => {
-      const m = s.fecha_ocurrencia?.slice(0, 7)
-      if (!m) return
-      if (!map[m]) map[m] = { total: 0, rojos: 0, amarillos: 0, verdes: 0 }
-      map[m].total++
-      if (s.nivel_riesgo === 'Rojo Alto')      map[m].rojos++
-      else if (s.nivel_riesgo === 'Amarillo Medio') map[m].amarillos++
-      else                                      map[m].verdes++
-    })
-    return Object.entries(map).sort(([a], [b]) => a.localeCompare(b)).slice(-12)
-  }, [siniestros])
-
-  const monthLabels   = monthlyGroups.map(([m]) => m.replace('-', '/'))
-  const monthTotals   = monthlyGroups.map(([, v]) => v.total)
-  const monthRojos    = monthlyGroups.map(([, v]) => v.rojos)
-  const monthAmarillos = monthlyGroups.map(([, v]) => v.amarillos)
-  const monthVerdes   = monthlyGroups.map(([, v]) => v.verdes)
-
-  // Nested Pie: inner = nivel riesgo, outer = ramo within each nivel
-  const { innerPie, outerPie } = React.useMemo(() => {
-    if (!kpis) return { innerPie: [], outerPie: [] }
-    const innerPie = [
-      { id: 'verde',    label: 'Verde Bajo',    value: kpis.casos_verdes,    color: '#22c55e' },
-      { id: 'amarillo', label: 'Amarillo Medio', value: kpis.casos_amarillos, color: '#eab308' },
-      { id: 'rojo',     label: 'Rojo Alto',     value: kpis.casos_rojos,     color: '#ef4444' },
-    ]
-    // Count siniestros by ramo within each nivel
-    const ramoByNivel: Record<string, Record<string, number>> = {
-      'Verde Bajo': {}, 'Amarillo Medio': {}, 'Rojo Alto': {},
-    }
-    siniestros.forEach(s => {
-      if (!ramoByNivel[s.nivel_riesgo]) return
-      ramoByNivel[s.nivel_riesgo][s.ramo] = (ramoByNivel[s.nivel_riesgo][s.ramo] ?? 0) + 1
-    })
-    const shades: Record<string, string[]> = {
-      'Verde Bajo':    ['#16a34a','#15803d','#166534','#14532d'],
-      'Amarillo Medio': ['#ca8a04','#a16207','#854d0e','#713f12'],
-      'Rojo Alto':     ['#dc2626','#b91c1c','#991b1b','#7f1d1d'],
-    }
-    let shadeIdx: Record<string, number> = {}
-    const outerPie = (Object.entries(ramoByNivel) as [string, Record<string, number>][]).flatMap(([nivel, ramos]) => {
-      shadeIdx[nivel] = 0
-      return Object.entries(ramos)
-        .sort(([, a], [, b]) => b - a).slice(0, 3)
-        .map(([ramo, count]) => ({
-          id: `${nivel}-${ramo}`,
-          label: ramo,
-          value: count,
-          color: shades[nivel]?.[shadeIdx[nivel]++] ?? '#333',
-        }))
-    })
-    return { innerPie, outerPie }
-  }, [kpis, siniestros])
-
-  // Heatmap: score_promedio by top5 ciudades × top4 ramos
-  const heatmapData = React.useMemo(() => {
-    if (!siniestros.length) return { ciudades: [], ramos: [], data: [] }
-    const ciudadCount: Record<string, number> = {}
-    const ramoCount: Record<string, number> = {}
-    siniestros.forEach(s => {
-      if (s.ciudad) ciudadCount[s.ciudad] = (ciudadCount[s.ciudad] ?? 0) + 1
-      if (s.ramo)   ramoCount[s.ramo]     = (ramoCount[s.ramo] ?? 0) + 1
-    })
-    const ciudades = Object.entries(ciudadCount).sort(([, a], [, b]) => b - a).slice(0, 5).map(([c]) => c)
-    const ramos    = Object.entries(ramoCount).sort(([, a], [, b]) => b - a).slice(0, 4).map(([r]) => r)
-    const scoreMap: Record<string, number[]> = {}
-    siniestros.forEach(s => {
-      const cx = ciudades.indexOf(s.ciudad)
-      const ry = ramos.indexOf(s.ramo)
-      if (cx < 0 || ry < 0) return
-      const key = `${cx}-${ry}`
-      if (!scoreMap[key]) scoreMap[key] = []
-      scoreMap[key].push(Number(s.score_final))
-    })
-    const data = ciudades.flatMap((_, cx) =>
-      ramos.map((_, ry) => {
-        const scores = scoreMap[`${cx}-${ry}`] ?? []
-        const avg = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
-        return { x: cx, y: ry, v: Math.round(avg) }
-      })
-    )
-    return { ciudades, ramos, data }
-  }, [siniestros])
-
-  // Ramos por % Rojo Alto — datos reales
-  const ramoRisk = React.useMemo(() => {
-    const map: Record<string, { total: number; rojos: number }> = {}
-    siniestros.forEach(s => {
-      if (!s.ramo) return
-      if (!map[s.ramo]) map[s.ramo] = { total: 0, rojos: 0 }
-      map[s.ramo].total++
-      if (s.nivel_riesgo === 'Rojo Alto') map[s.ramo].rojos++
-    })
-    return Object.entries(map)
-      .map(([ramo, { total, rojos }]) => ({
-        ramo, total, rojos,
-        pctRojo: total > 0 ? Math.round((rojos / total) * 100) : 0,
-      }))
-      .sort((a, b) => b.pctRojo - a.pctRojo)
-      .slice(0, 6)
-  }, [siniestros])
-
-  const highlightScope = { highlight: 'item', fade: 'global' } as const
-
-  // ── Loading / Error ───────────────────────────────────────────────────────
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-[#111111]">
-      <RefreshCw className="w-6 h-6 text-[#C8FF00] animate-spin mr-3" />
-      <p className="text-neutral-500 text-sm">Cargando datos...</p>
-    </div>
-  )
-  if (error) return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-[#111111] gap-3">
-      <AlertTriangle className="w-8 h-8 text-red-400" />
-      <p className="text-neutral-400 text-sm">{error}</p>
-    </div>
-  )
-
-  // ── Render ────────────────────────────────────────────────────────────────
-  return (
-    <ThemeProvider theme={dark}>
-      <div className="p-8 bg-[#111111] min-h-screen max-w-6xl">
-
-        {/* Header */}
-        <div className="mb-7">
-          <p className="text-[10px] font-semibold text-neutral-600 uppercase tracking-widest mb-1">Sistema</p>
-          <h1 className="text-4xl font-bold text-white leading-none">ESTADÍSTICAS & ARQUITECTURA</h1>
-          <p className="text-neutral-500 text-sm mt-1">
-            FraudIA Claims Assistant · {kpis?.total_siniestros.toLocaleString('es-EC')} siniestros analizados
-          </p>
-        </div>
-
-        {/* ── ROW 1: Gauge · SparkLine · Nested Pie ─────────────────────── */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
-
-          {/* Gauge — score promedio real */}
-          <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-5">
-            <p className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider mb-1">
-              Score Promedio del Sistema
-            </p>
-            <Gauge
-              value={kpis ? Math.round(kpis.score_promedio) : 0}
-              startAngle={-110}
-              endAngle={110}
-              height={185}
-              sx={{
-                [`& .${gaugeClasses.valueArc}`]: { fill: '#eab308' },
-                [`& .${gaugeClasses.referenceArc}`]: { fill: '#2A2A2A' },
-              }}
-            >
-              <GaugeCenter value={kpis ? Math.round(kpis.score_promedio) : 0} />
-            </Gauge>
-            <p className="text-center text-[11px] text-neutral-500 -mt-2">
-              {kpis && kpis.score_promedio >= 70 ? 'Nivel Rojo · escalar' :
-               kpis && kpis.score_promedio >= 40 ? 'Nivel Amarillo · revisión' :
-               'Nivel Verde · flujo normal'}
-            </p>
           </div>
 
-          {/* SparkLine — siniestros por mes (datos reales) */}
-          <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-5 flex flex-col">
-            <p className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider mb-3">
-              Siniestros · tendencia mensual
-            </p>
-            <div
-              role="button" tabIndex={0} className="outline-none flex-1 flex flex-col justify-between"
-              onKeyDown={e => {
-                if (e.key === 'ArrowLeft') setSemIdx(p => p === null ? monthLabels.length - 1 : (monthLabels.length + p - 1) % monthLabels.length)
-                if (e.key === 'ArrowRight') setSemIdx(p => p === null ? 0 : (p + 1) % monthLabels.length)
-              }}
-              onFocus={() => setSemIdx(p => p ?? 0)}
-            >
-              <div>
-                <p className="text-neutral-500 text-xs mb-0.5">
-                  {semIdx === null ? 'Últimos 12 meses' : monthLabels[semIdx]}
-                </p>
-                <div className="flex items-end justify-between border-b border-[#eab308]/25 pb-2 mb-3">
-                  <span className="text-2xl font-bold text-white">
-                    {monthTotals[semIdx ?? monthTotals.length - 1] ?? 0}
-                    <span className="text-xs text-neutral-500 ml-1">casos</span>
-                  </span>
-                  <SparkLineChart
-                    data={monthTotals}
-                    height={52}
-                    width={160}
-                    area showHighlight
-                    color="#eab308"
-                    onHighlightedAxisChange={items => setSemIdx(items[0]?.dataIndex ?? null)}
-                    highlightedAxis={semIdx === null ? [] : [{ axisId: 'mes-axis', dataIndex: semIdx }]}
-                    xAxis={{ id: 'mes-axis', data: monthLabels }}
-                    yAxis={{ domainLimit: (_, max) => ({ min: -max / 6, max }) }}
-                    axisHighlight={{ x: 'line' }}
-                    margin={{ bottom: 0, top: 4, left: 4, right: 0 }}
-                    baseline="min"
-                    sx={{
-                      [`& .${lineClasses.area}`]: { opacity: 0.15 },
-                      [`& .${lineClasses.line}`]: { strokeWidth: 2.5 },
-                      [`& .${chartsAxisHighlightClasses.root}`]: {
-                        stroke: '#eab308', strokeDasharray: 'none', strokeWidth: 1.5,
-                      },
-                    }}
-                    slotProps={{ lineHighlight: { r: 4 } }}
-                  />
-                </div>
+          {/* Score formula */}
+          <div className="mt-6 pt-5 border-t border-[#1a1a1a] flex items-center justify-center gap-6 flex-wrap">
+            <p className="text-xs text-neutral-600 uppercase tracking-widest">Score final =</p>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#2a2a2a]">
+                <span className="text-sm font-bold text-[#C8FF00]">0.6</span>
+                <span className="text-xs text-neutral-500">× Score reglas</span>
               </div>
-              <div className="flex gap-3">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-red-400" />
-                  <span className="text-[11px] text-neutral-500">
-                    Rojos: <span className="text-red-400 font-semibold">
-                      {monthRojos[semIdx ?? monthRojos.length - 1] ?? 0}
-                    </span>
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-yellow-400" />
-                  <span className="text-[11px] text-neutral-500">
-                    Amarillos: <span className="text-yellow-400 font-semibold">
-                      {monthAmarillos[semIdx ?? monthAmarillos.length - 1] ?? 0}
-                    </span>
-                  </span>
-                </div>
+              <span className="text-neutral-600">+</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#1a1a1a] border border-[#2a2a2a]">
+                <span className="text-sm font-bold text-[#C8FF00]">0.4</span>
+                <span className="text-xs text-neutral-500">× Modelo simulado</span>
+              </div>
+              <span className="text-neutral-600">→</span>
+              <div className="flex items-center gap-3">
+                {[
+                  { label: 'Verde', range: '0–39',   color: '#22c55e' },
+                  { label: 'Amarillo', range: '40–69', color: '#eab308' },
+                  { label: 'Rojo',  range: '70–100', color: '#ef4444' },
+                ].map(s => (
+                  <div key={s.label} className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full" style={{ background: s.color }} />
+                    <span className="text-xs" style={{ color: s.color }}>{s.label}</span>
+                    <span className="text-xs text-neutral-700">{s.range}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-
-          {/* Nested Pie — distribución riesgo × ramo (datos reales) */}
-          <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-5">
-            <p className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider mb-1">
-              Riesgo × Ramo
-            </p>
-            <PieChart
-              series={[
-                {
-                  innerRadius: 45, outerRadius: 88,
-                  data: innerPie,
-                  highlightScope: { fade: 'global', highlight: 'item' },
-                  cornerRadius: 3, paddingAngle: 2,
-                  arcLabel: item => `${Math.round((item.value / (kpis?.total_siniestros ?? 1)) * 100)}%`,
-                },
-                {
-                  innerRadius: 93, outerRadius: 113,
-                  data: outerPie,
-                  highlightScope: { fade: 'global', highlight: 'item' },
-                  cornerRadius: 2, paddingAngle: 1,
-                },
-              ]}
-              sx={{ [`& .${pieClasses.arcLabel}`]: { fontSize: 10, fill: '#fff' } }}
-              height={220}
-              hideLegend
-            >
-              <PieCenterLabel>{kpis?.total_siniestros ?? '...'}{'\n'}casos</PieCenterLabel>
-            </PieChart>
-            <div className="flex justify-center gap-3 mt-1">
-              {innerPie.map(d => (
-                <div key={d.id} className="flex items-center gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: d.color }} />
-                  <span className="text-[10px] text-neutral-500">{d.label.split(' ')[0]}</span>
-                  <span className="text-[10px] font-semibold" style={{ color: d.color }}>{d.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
+      </div>
 
-        {/* ── ROW 2: Heatmap · Funnel ───────────────────────────────────── */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
-
-          {/* Heatmap — score promedio real por ciudad × ramo */}
-          <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-5">
-            <p className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider mb-3">
-              Score Promedio · Ciudad × Ramo
-            </p>
-            {heatmapData.ciudades.length > 0 && (
-              <CustomHeatmap
-                ciudades={heatmapData.ciudades}
-                ramos={heatmapData.ramos}
-                data={heatmapData.data}
-              />
-            )}
-          </div>
-
-          {/* Ramos por % Rojo Alto — datos reales */}
-          <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-5">
-            <p className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider mb-3">
-              Ramos · % Riesgo Rojo Alto (datos reales)
-            </p>
-            <div className="flex flex-col gap-3">
-              {ramoRisk.map((r, i) => (
-                <div key={r.ramo}>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-bold text-neutral-600 w-3">{i + 1}</span>
-                      <span className="text-[11px] text-white font-medium">{r.ramo}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] text-neutral-500">{r.rojos}/{r.total} casos</span>
-                      <span className="text-[11px] font-bold w-10 text-right"
-                        style={{ color: r.pctRojo >= 15 ? '#ef4444' : r.pctRojo >= 8 ? '#eab308' : '#22c55e' }}>
-                        {r.pctRojo}%
-                      </span>
-                    </div>
+      {/* ── Stack grid ─────────────────────────────────────────────────────── */}
+      <div className="mb-10">
+        <p className="text-xs font-bold text-neutral-600 uppercase tracking-widest mb-4">Stack tecnológico</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {STACK.map((s) => {
+            const MainLogo = s.logo
+            return (
+              <div
+                key={s.title}
+                className={`rounded-2xl ${s.bg} border ${s.border} p-5 flex flex-col gap-4`}
+              >
+                {/* Logos row */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 flex-shrink-0">
+                    <MainLogo />
                   </div>
-                  <div className="h-1.5 rounded-full bg-[#2A2A2A] overflow-hidden">
-                    <div className="h-full rounded-full transition-all duration-700"
-                      style={{
-                        width: `${r.pctRojo}%`,
-                        background: r.pctRojo >= 15 ? '#ef4444' : r.pctRojo >= 8 ? '#eab308' : '#22c55e',
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── ROW 3: RadialBarChart — alertas mensuales reales ─────────── */}
-        <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-5 mb-5">
-          <p className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider mb-3">
-            Alertas por Nivel · distribución mensual (últimos {monthlyGroups.length} meses)
-          </p>
-          {monthTotals.length > 0 && (
-            <BarChart
-              xAxis={[{ scaleType: 'band', data: monthLabels, tickLabelStyle: { fill: '#555', fontSize: 9 } }]}
-              yAxis={[{ tickLabelStyle: { fill: '#555', fontSize: 9 } }]}
-              series={[
-                { data: monthRojos,     label: 'Rojo Alto',      color: '#ef4444', stack: 'niveles', highlightScope },
-                { data: monthAmarillos, label: 'Amarillo Medio', color: '#eab308', stack: 'niveles', highlightScope },
-                { data: monthVerdes,    label: 'Verde Bajo',     color: '#22c55e', stack: 'niveles', highlightScope },
-              ]}
-              height={260}
-              borderRadius={3}
-              hideLegend
-              sx={{
-                '& .MuiChartsAxis-line, & .MuiChartsAxis-tick': { stroke: 'transparent' },
-                '& .MuiChartsGrid-line': { stroke: '#222', strokeDasharray: '3 3' },
-              }}
-            />
-          )}
-        </div>
-
-        {/* ── Stack + Agent Tools ──────────────────────────────────────── */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <p className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider mb-3">Stack Tecnológico</p>
-            <div className="grid grid-cols-2 gap-2">
-              {stackSections.map(s => (
-                <div key={s.title} className="rounded-xl bg-[#191919] border border-[#2A2A2A] p-3">
-                  <p className="text-xs font-bold mb-2" style={{ color: s.color }}>{s.title}</p>
-                  <ul className="space-y-1">
-                    {s.items.map((item, i) => (
-                      <li key={i} className="flex items-center gap-1.5 text-[11px] text-neutral-500">
-                        <span className="w-1 h-1 rounded-full flex-shrink-0" style={{ background: s.color }} />
-                        {item}
-                      </li>
+                  <div className="flex gap-2">
+                    {s.secondaryLogos.map((Logo, i) => (
+                      <div key={i} className="w-8 h-8 flex-shrink-0 opacity-80">
+                        <Logo />
+                      </div>
                     ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-[10px] text-neutral-600 font-semibold uppercase tracking-wider mb-3">Tools del Agente ADK</p>
-            <div className="rounded-xl bg-[#191919] border border-[#2A2A2A] p-3 space-y-2.5">
-              {agentTools.map(t => (
-                <div key={t.name} className="flex items-start gap-2">
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono flex-shrink-0 mt-0.5 ${
-                    t.type === 'RAG'     ? 'bg-green-900/40  text-green-400  border border-green-800' :
-                    t.type === 'SQL+RAG' ? 'bg-purple-900/40 text-purple-400 border border-purple-800' :
-                    'bg-blue-900/40 text-blue-400 border border-blue-800'}`}>
-                    {t.type}
-                  </span>
-                  <div>
-                    <p className="text-[11px] font-mono text-white leading-tight">{t.name}</p>
-                    <p className="text-[10px] text-neutral-600">{t.desc}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
-        {/* Disclaimer */}
-        <div className="rounded-xl bg-[#FF6500]/5 border border-[#FF6500]/20 p-4 flex items-start gap-3">
-          <AlertTriangle className="w-4 h-4 text-[#FF6500] flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-neutral-400 leading-relaxed">
-            <span className="font-semibold text-[#FF6500]">Principio ético central:</span>{' '}
-            FraudIA genera <strong className="text-white">alertas de revisión</strong>, nunca acusaciones.
-            Ningún siniestro es rechazado automáticamente. Toda decisión final recae en analistas humanos calificados.
-            Datos del demo 100% sintéticos.
-          </p>
-        </div>
+                {/* Title */}
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest mb-0.5" style={{ color: s.color }}>
+                    {s.title}
+                  </p>
+                  <div className="h-px w-8 rounded" style={{ background: s.color }} />
+                </div>
 
+                {/* Items */}
+                <ul className="space-y-1.5 flex-1">
+                  {s.items.map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-neutral-400">
+                      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: s.color }} />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          })}
+        </div>
       </div>
-    </ThemeProvider>
+
+      {/* ── Agent Tools ────────────────────────────────────────────────────── */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-4">
+          <p className="text-xs font-bold text-neutral-600 uppercase tracking-widest">Tools del Agente ADK</p>
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C8FF00]/10 border border-[#C8FF00]/20 text-[#C8FF00] font-bold">
+            7 herramientas
+          </span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          {TOOLS.map((t, i) => (
+            <div
+              key={t.name}
+              className={`rounded-xl p-4 border ${t.border} ${t.bg} flex items-start gap-3`}
+            >
+              <div className="flex flex-col items-center gap-1 flex-shrink-0 pt-0.5">
+                <span
+                  className="text-[10px] font-black px-2 py-0.5 rounded font-mono"
+                  style={{ color: t.color, background: `${t.color}20`, border: `1px solid ${t.color}40` }}
+                >
+                  {t.type}
+                </span>
+                <span className="text-[10px] text-neutral-700 font-mono">#{i + 1}</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-mono font-bold text-white leading-tight truncate" title={t.name}>
+                  {t.name}
+                </p>
+                <p className="text-xs text-neutral-500 mt-1 leading-relaxed">{t.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Disclaimer ─────────────────────────────────────────────────────── */}
+      <div className="rounded-xl bg-[#FF6500]/5 border border-[#FF6500]/20 p-4 flex items-start gap-3">
+        <AlertTriangle className="w-4 h-4 text-[#FF6500] flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-neutral-400 leading-relaxed">
+          <span className="font-bold text-[#FF6500]">Principio ético central:</span>{' '}
+          FraudSweep genera <strong className="text-white">alertas de revisión</strong>, nunca acusaciones.
+          Ningún siniestro es rechazado automáticamente. Toda decisión final recae en analistas humanos calificados.
+          Datos del demo 100% sintéticos.
+        </p>
+      </div>
+
+    </div>
   )
 }

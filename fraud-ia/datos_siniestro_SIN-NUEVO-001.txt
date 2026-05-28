@@ -1,0 +1,37 @@
+== DATOS PARA FORMULARIO /evaluar ==
+
+Ramo:                     Automóvil
+Ciudad:                   Quito
+Monto reclamado (USD):    42000
+Nombre del proveedor:     Taller Automotriz Norte
+Días desde inicio póliza: 58
+Días ocurrencia→reporte:  6
+Documentación completa:   NO (desmarcar el checkbox)
+
+Descripción del siniestro:
+  Colisión lateral en Panamericana Norte km 24 a las 02:30 horas.
+  Vehículo impactante de color negro se dio a la fuga. Sin testigos.
+  Sin reporte ECU-911. Pérdida parcial con daños en zona frontal
+  y lateral derecha. Toyota Hilux 2022, placa PBK-4417.
+
+PDF a adjuntar: peritaje_SIN-NUEVO-001.pdf
+
+== QUÉ ESPERAR AL EVALUAR ==
+
+Score esperado: ~44 (Amarillo Medio)
+  — Si el taller está en lista restrictiva → sube a ~74 (Rojo Alto)
+
+Alertas que deben aparecer:
+  ◆ Siniestro ocurrido 58 días después del inicio de póliza (umbral: 90)
+  ◆ Documentación declarada como incompleta
+
+Acción sugerida: Solicitar revisión supervisora antes de pagar
+
+== PREGUNTAS PARA EL AGENTE (después de indexar el PDF) ==
+
+Una vez que el PDF quede indexado, prueba estas preguntas en el chat:
+
+  → "¿Qué inconsistencias encontró el perito en el peritaje SIN-NUEVO-001?"
+  → "¿Cuánto es la diferencia entre lo reclamado y los daños verificados?"
+  → "¿Por qué el perito recomienda no pagar este siniestro?"
+  → "¿Qué relación tiene el Taller Automotriz Norte con siniestros anteriores?"

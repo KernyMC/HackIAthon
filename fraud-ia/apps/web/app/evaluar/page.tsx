@@ -120,14 +120,14 @@ export default function EvaluarPage() {
                 required
                 value={form.ciudad}
                 onChange={e => set('ciudad', e.target.value)}
-                placeholder="Ej: Bogotá"
+                placeholder="Ej: Quito"
                 className="w-full bg-[#141414] border border-[#2A2A2A] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#C8FF00]/40 placeholder:text-neutral-600"
               />
             </div>
 
             {/* Monto */}
             <div>
-              <label className="text-xs text-neutral-400 mb-1 block">Monto reclamado (COP) *</label>
+              <label className="text-xs text-neutral-400 mb-1 block">Monto reclamado (USD) *</label>
               <input
                 required
                 type="number"

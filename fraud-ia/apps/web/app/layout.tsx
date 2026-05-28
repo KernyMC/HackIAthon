@@ -4,7 +4,7 @@ import Sidebar from '@/components/layout/Sidebar'
 import ChatBubble from '@/components/ChatBubble'
 
 export const metadata: Metadata = {
-  title: 'FraudIA Claims Assistant',
+  title: 'FraudSweep Claims Assistant',
   description: 'Sistema de apoyo para análisis de posible fraude en siniestros — Aseguradora del Sur',
 }
 

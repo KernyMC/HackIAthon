@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
@@ -8,7 +9,6 @@ import {
   Building2,
   MessageSquare,
   Network,
-  ShieldAlert,
   Home,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -29,9 +29,9 @@ export default function Sidebar() {
     <aside className="fixed left-0 top-0 h-full w-16 bg-[#0F0F0F] border-r border-[#2A2A2A] flex flex-col items-center z-40">
       {/* Logo */}
       <div className="w-full flex items-center justify-center py-5 border-b border-[#2A2A2A]">
-        <div className="w-9 h-9 rounded-xl bg-[#C8FF00] flex items-center justify-center">
-          <ShieldAlert className="w-5 h-5 text-black" />
-        </div>
+        <Link href="/" title="FraudSweep">
+          <Image src="/logo.png" alt="FraudSweep" width={36} height={36} className="rounded-xl" />
+        </Link>
       </div>
 
       {/* Navigation */}

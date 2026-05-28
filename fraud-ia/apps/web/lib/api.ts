@@ -13,6 +13,7 @@ import type {
   ColaRevisionItem,
   KanbanColumn,
   RevisionAccionPayload,
+  Revisor,
 } from './types'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -100,6 +101,10 @@ export async function getColaRevision(limit = 20): Promise<ColaRevisionItem[]> {
 
 export async function getKanban(): Promise<KanbanColumn[]> {
   return apiFetch<KanbanColumn[]>('/api/revisiones/kanban')
+}
+
+export async function getRevisores(): Promise<Revisor[]> {
+  return apiFetch<Revisor[]>('/api/revisiones/revisores')
 }
 
 export async function resolverRevision(

@@ -22,10 +22,10 @@ import { styled } from '@mui/material/styles'
 import { BarChart } from '@mui/x-charts/BarChart'
 
 import {
-  ShieldAlert, ShieldCheck, AlertTriangle, TrendingUp, DollarSign, Activity, RefreshCw, RotateCcw, MessageSquare, ExternalLink,
+  ShieldAlert, ShieldCheck, AlertTriangle, TrendingUp, DollarSign, Activity, RefreshCw, RotateCcw, MessageSquare, ExternalLink, UserCheck,
 } from 'lucide-react'
-import { getKpis, getSiniestros, getProveedoresRiesgo, getNarrativasSimilares } from '@/lib/api'
-import type { KPIs, Siniestro, Proveedor, NarrativasSimilaresResponse } from '@/lib/types'
+import { getKpis, getSiniestros, getProveedoresRiesgo, getNarrativasSimilares, getColaRevision } from '@/lib/api'
+import type { KPIs, Siniestro, Proveedor, NarrativasSimilaresResponse, ColaRevisionItem } from '@/lib/types'
 import { formatMoney, formatScore } from '@/lib/utils'
 import Link from 'next/link'
 
@@ -174,6 +174,7 @@ export default function DashboardPage() {
   const [allSin, setAllSin]           = useState<Siniestro[]>([])
   const [proveedores, setProveedores]   = useState<Proveedor[]>([])
   const [narrativas, setNarrativas]   = useState<NarrativasSimilaresResponse | null>(null)
+  const [cola, setCola]               = useState<ColaRevisionItem[]>([])
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
@@ -200,6 +201,10 @@ export default function DashboardPage() {
   }, [])
 
   useEffect(() => { loadData() }, [loadData])
+
+  useEffect(() => {
+    getColaRevision(4).then(setCola).catch(() => {})
+  }, [])
 
   // GridStack init
   useEffect(() => {
@@ -957,6 +962,69 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Cola de Revisión Humana ───────────────────────────────── */}
+            <div className="grid-stack-item" gs-x={0} gs-y={17} gs-w={12} gs-h={4}>
+              <div className="grid-stack-item-content">
+                <div className="bg-[#0F0F0F] border border-[#1A1A1A] rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="w-4 h-4 text-amber-400" />
+                      <span className="text-[13px] font-semibold text-white">Cola de Revisión Humana</span>
+                    </div>
+                    <span className="text-[11px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                      {cola.length} casos
+                    </span>
+                  </div>
+
+                  {cola.length === 0 ? (
+                    <div className="flex items-center justify-center py-8 text-neutral-600 text-xs">
+                      No hay casos en revisión
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {cola.map(item => (
+                        <a
+                          key={item.id_siniestro}
+                          href={`/siniestros/${item.id_siniestro}`}
+                          className="flex items-center gap-3 p-2.5 bg-[#141414] hover:bg-[#1A1A1A] border border-[#1E1E1E] hover:border-amber-500/20 rounded-xl transition-all group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                            <span className="text-[10px] font-bold text-amber-400">
+                              {item.revisor_nombre.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-mono font-bold text-white truncate">{item.id_siniestro}</span>
+                              {item.nivel_riesgo === 'Rojo Alto' && (
+                                <span className="text-[9px] px-1 py-0.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded">Rojo</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <span className="text-[10px] text-neutral-500 truncate">{item.revisor_nombre}</span>
+                              <span className="text-[10px] text-neutral-700">·</span>
+                              <span className="text-[10px] text-neutral-500">{item.ramo}</span>
+                            </div>
+                          </div>
+                          <div className="text-right flex-shrink-0">
+                            <div className="text-[11px] font-bold text-white">{item.score_final ?? '—'}</div>
+                            <div className="text-[9px] text-neutral-600">pts</div>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                  <a
+                    href="/siniestros?estado_revision=En+revisión"
+                    className="flex items-center justify-center gap-1 mt-3 text-[10px] text-neutral-600 hover:text-amber-400 transition-colors"
+                  >
+                    Ver todos →
+                  </a>
                 </div>
               </div>
             </div>

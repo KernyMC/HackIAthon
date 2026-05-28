@@ -20,10 +20,12 @@ import {
   Bot,
   X,
   Send,
+  UserCheck,
+  Loader2,
 } from 'lucide-react'
 import { MarkdownContent } from '@/components/ui/markdown-content'
-import { getSiniestro, chat } from '@/lib/api'
-import type { SiniestroDetail } from '@/lib/types'
+import { getSiniestro, chat, enviarARevision } from '@/lib/api'
+import type { SiniestroDetail, RevisionResult } from '@/lib/types'
 import { RiskBadge } from '@/components/ui/risk-badge'
 import { formatMoney, formatScore, formatDate } from '@/lib/utils'
 
@@ -61,6 +63,24 @@ export default function SiniestroDetailPage() {
   const [messages, setMessages]   = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
   const sessionId = useRef(`detail-${id}-${Date.now()}`)
   const aiBottomRef = useRef<HTMLDivElement>(null)
+
+  const [showRevModal, setShowRevModal] = useState(false)
+  const [revLoading, setRevLoading]     = useState(false)
+  const [revResult, setRevResult]       = useState<RevisionResult | null>(null)
+  const [revError, setRevError]         = useState<string | null>(null)
+
+  const handleEnviarRevision = async () => {
+    setRevLoading(true)
+    setRevError(null)
+    try {
+      const res = await enviarARevision(id)
+      setRevResult(res)
+    } catch (err: unknown) {
+      setRevError(err instanceof Error ? err.message : 'Error al enviar')
+    } finally {
+      setRevLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (!id) return
@@ -168,6 +188,21 @@ export default function SiniestroDetailPage() {
               <p className="text-neutral-500 mt-1.5">{s.ramo} · {s.cobertura} · {s.ciudad}</p>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
+              {/* Botón enviar a revisión */}
+              {siniestro?.estado_revision !== 'En revisión' ? (
+                <button
+                  onClick={() => setShowRevModal(true)}
+                  className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-500/60 text-amber-400 rounded-lg transition-all"
+                >
+                  <UserCheck className="w-3.5 h-3.5" />
+                  Enviar a revisión humana
+                </button>
+              ) : (
+                <span className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-lg">
+                  <UserCheck className="w-3.5 h-3.5" />
+                  En revisión humana
+                </span>
+              )}
               <RiskBadge nivel={s.nivel_riesgo} className="text-sm px-3 py-1.5" />
               <button
                 onClick={aiOpen ? closeAiPanel : handleExplainWithAI}
@@ -499,6 +534,68 @@ export default function SiniestroDetailPage() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Modal revisión humana */}
+      {showRevModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#111] border border-[#2A2A2A] rounded-2xl p-6 w-full max-w-sm mx-4 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                <UserCheck className="w-5 h-5 text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-white">Enviar a revisión humana</h3>
+                <p className="text-xs text-neutral-400">Se asignará automáticamente por ramo</p>
+              </div>
+            </div>
+
+            {!revResult ? (
+              <>
+                <p className="text-xs text-neutral-300 mb-5">
+                  El siniestro <span className="font-mono text-[#C8FF00]">{id}</span> pasará
+                  a estado <strong className="text-amber-400">En revisión</strong> y se asignará
+                  a un analista según el ramo <strong className="text-white">{siniestro?.ramo}</strong>.
+                </p>
+                {revError && (
+                  <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-3">
+                    {revError}
+                  </p>
+                )}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowRevModal(false)}
+                    className="flex-1 py-2 text-xs text-neutral-400 hover:text-white border border-[#2A2A2A] hover:border-[#3A3A3A] rounded-lg transition-all"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleEnviarRevision}
+                    disabled={revLoading}
+                    className="flex-1 py-2 text-xs font-semibold bg-amber-500 hover:bg-amber-400 disabled:bg-amber-500/30 text-black disabled:text-amber-800 rounded-lg transition-all flex items-center justify-center gap-1.5"
+                  >
+                    {revLoading ? <><Loader2 className="w-3 h-3 animate-spin" />Asignando...</> : 'Confirmar'}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4 mb-4">
+                  <p className="text-xs text-amber-400 font-semibold mb-2">✓ Asignado correctamente</p>
+                  <p className="text-xs text-neutral-300"><span className="text-neutral-500">Revisor:</span> {revResult.revisor.nombre}</p>
+                  <p className="text-xs text-neutral-300"><span className="text-neutral-500">Especialidad:</span> {revResult.revisor.especialidad}</p>
+                  <p className="text-xs text-neutral-300"><span className="text-neutral-500">Casos activos:</span> {revResult.revisor.casos_activos}</p>
+                </div>
+                <button
+                  onClick={() => { setShowRevModal(false); setRevResult(null) }}
+                  className="w-full py-2 text-xs font-semibold bg-[#C8FF00] text-black rounded-lg hover:bg-[#d4ff33] transition-all"
+                >
+                  Cerrar
+                </button>
+              </>
+            )}
+          </div>
         </div>
       )}
     </div>

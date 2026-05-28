@@ -13,6 +13,7 @@ from .providers.router import router as providers_router
 from .documents.router import router as documents_router
 from .rag.router import router as rag_router
 from .admin.router import router as admin_router
+from .intake.router import router as intake_router
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -48,6 +49,7 @@ app.include_router(providers_router)
 app.include_router(documents_router)
 app.include_router(rag_router)
 app.include_router(admin_router)
+app.include_router(intake_router)
 
 
 @app.exception_handler(Exception)

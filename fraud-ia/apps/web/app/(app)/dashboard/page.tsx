@@ -90,20 +90,26 @@ function CustomHeatmap({ ciudades, ramos, data }: {
 
 // ── Grid positions ───────────────────────────────────────────────────────────
 const GRID_ITEMS = {
+  // Row 0: KPIs + Sparkline inline
   'kpi-total':    { x: 0,  y: 0,  w: 2,  h: 2 },
-  'kpi-niveles':  { x: 2,  y: 0,  w: 6,  h: 2 },
+  'kpi-niveles':  { x: 2,  y: 0,  w: 3,  h: 2 },
+  'sparkline':    { x: 5,  y: 0,  w: 3,  h: 2 },
   'kpi-monto':    { x: 8,  y: 0,  w: 2,  h: 2 },
   'kpi-score':    { x: 10, y: 0,  w: 2,  h: 2 },
-  'criticos':     { x: 0,  y: 2,  w: 3,  h: 4 },
-  'donut':        { x: 3,  y: 2,  w: 3,  h: 4 },
-  'ramos':        { x: 6,  y: 2,  w: 3,  h: 4 },
-  'bar':          { x: 9,  y: 2,  w: 3,  h: 4 },
-  'sparkline':    { x: 0,  y: 6,  w: 5,  h: 3 },
-  'heatmap':      { x: 5,  y: 6,  w: 7,  h: 3 },
-  'radialbar':    { x: 0,  y: 9,  w: 7,  h: 4 },
-  'providers':    { x: 7,  y: 9,  w: 5,  h: 4 },
-  'narrativas':   { x: 0,  y: 13, w: 12, h: 4 },
-  'legend':       { x: 0,  y: 17, w: 12, h: 2 },
+  // Row 1: Donut + Stacked area
+  'donut':        { x: 0,  y: 2,  w: 4,  h: 5 },
+  'radialbar':    { x: 4,  y: 2,  w: 8,  h: 5 },
+  // Row 2: Top 10 + Heatmap
+  'bar':          { x: 0,  y: 7,  w: 6,  h: 4 },
+  'heatmap':      { x: 6,  y: 7,  w: 6,  h: 4 },
+  // Row 3: Narrativas full width
+  'narrativas':   { x: 0,  y: 11, w: 12, h: 6 },
+  // Row 4: Críticos (left) | Kanban (right)
+  'criticos':     { x: 0,  y: 17, w: 6,  h: 5 },
+  // Row 5: Ramos | Cola | Proveedores — tres tercios
+  'ramos':        { x: 0,  y: 22, w: 4,  h: 4 },
+  'providers':    { x: 8,  y: 22, w: 4,  h: 4 },
+  'legend':       { x: 0,  y: 27, w: 12, h: 2 },
 }
 
 // ── Cluster metadata ──────────────────────────────────────────────────────────
@@ -201,7 +207,6 @@ export default function DashboardPage() {
   const [gridKey, setGridKey] = useState(0)
 
   const [kpis, setKpis]               = useState<KPIs | null>(null)
-  const [topSin, setTopSin]           = useState<Siniestro[]>([])
   const [allSin, setAllSin]           = useState<Siniestro[]>([])
   const [proveedores, setProveedores]   = useState<Proveedor[]>([])
   const [narrativas, setNarrativas]   = useState<NarrativasSimilaresResponse | null>(null)
@@ -218,15 +223,17 @@ export default function DashboardPage() {
   const loadData = useCallback(async () => {
     setLoading(true); setError(null)
     try {
-      const [k, top, all, p] = await Promise.all([
+      const [k, all, p, colaData, cols, revs] = await Promise.all([
         getKpis(),
-        getSiniestros({ limit: 10, offset: 0 }),
         getSiniestros({ limit: 1000, offset: 0 }),
         getProveedoresRiesgo(5),
+        getColaRevision(4).catch(() => [] as ColaRevisionItem[]),
+        getKanban().catch(() => [] as KanbanColumn[]),
+        getRevisores().catch(() => [] as Revisor[]),
       ])
-      setKpis(k); setTopSin(top.items); setAllSin(all.items); setProveedores(p)
+      setKpis(k); setAllSin(all.items); setProveedores(p)
+      setCola(colaData); setKanban(cols); setRevisores(revs)
       setLastUpdated(new Date())
-      // Narrativas: optional — won't fail dashboard if script hasn't run yet
       getNarrativasSimilares().then(setNarrativas).catch(() => {})
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error cargando datos')
@@ -237,10 +244,6 @@ export default function DashboardPage() {
 
   useEffect(() => { loadData() }, [loadData])
 
-  useEffect(() => {
-    getColaRevision(4).then(setCola).catch(() => {})
-  }, [])
-
   const fetchKanban = useCallback(async () => {
     try {
       const [cols, revs] = await Promise.all([getKanban(), getRevisores()])
@@ -248,8 +251,6 @@ export default function DashboardPage() {
       setRevisores(revs)
     } catch { /* silent */ }
   }, [])
-
-  useEffect(() => { fetchKanban() }, [fetchKanban])
 
   const handleRevisionAccion = async (
     idSiniestro: string,
@@ -398,11 +399,16 @@ export default function DashboardPage() {
       .slice(0, 5)
   , [allSin])
 
-  // Bar chart top 10
-  const barData = topSin.map(s => ({
-    id: s.id_siniestro.replace('SIN-', ''),
-    score: Number(formatScore(s.score_final)),
-  }))
+  // Bar chart top 10 — derived from allSin, no extra fetch needed
+  const barData = useMemo(() =>
+    [...allSin]
+      .sort((a, b) => Number(b.score_final) - Number(a.score_final))
+      .slice(0, 10)
+      .map(s => ({
+        id: s.id_siniestro.replace('SIN-', ''),
+        score: Number(formatScore(s.score_final)),
+      }))
+  , [allSin])
 
   const pct = (n: number) => kpis ? `${Math.round((n / kpis.total_siniestros) * 100)}%` : ''
   const pos = (id: keyof typeof GRID_ITEMS) => GRID_ITEMS[id]
@@ -671,21 +677,21 @@ export default function DashboardPage() {
                       <PieChart
                         series={[
                           {
-                            innerRadius: 38, outerRadius: 80,
+                            innerRadius: 62, outerRadius: 118,
                             data: innerPie,
                             highlightScope: { fade: 'global', highlight: 'item' },
                             cornerRadius: 3, paddingAngle: 2,
                             arcLabel: item => `${Math.round((item.value / (kpis?.total_siniestros ?? 1)) * 100)}%`,
                           },
                           {
-                            innerRadius: 85, outerRadius: 105,
+                            innerRadius: 124, outerRadius: 148,
                             data: outerPie,
                             highlightScope: { fade: 'global', highlight: 'item' },
                             cornerRadius: 2, paddingAngle: 1,
                           },
                         ]}
-                        sx={{ [`& .${pieClasses.arcLabel}`]: { fontSize: 9, fill: '#fff' } }}
-                        height={210}
+                        sx={{ [`& .${pieClasses.arcLabel}`]: { fontSize: 10, fill: '#fff' } }}
+                        height={310}
                         hideLegend
                       >
                         <PieCenterLabel>{kpis?.total_siniestros ?? '...'}</PieCenterLabel>
@@ -750,36 +756,37 @@ export default function DashboardPage() {
             <div className="grid-stack-item" gs-x={pos('bar').x} gs-y={pos('bar').y} gs-w={pos('bar').w} gs-h={pos('bar').h}>
               <div className="grid-stack-item-content">
                 <Card title="Top 10 Siniestros · Mayor Score de Riesgo" accent="#eab308" tooltip="Los 10 siniestros con el score de riesgo más alto. Score = 60% reglas + 40% modelo simulado. Rojo ≥70, Amarillo ≥40.">
-                  <div className="flex flex-col gap-1.5 h-full overflow-auto">
+                  <div className="flex flex-col gap-1.5 h-full overflow-auto pr-3">
                     {barData.map((d, i) => {
                       const color = d.score >= 70 ? '#ef4444' : d.score >= 40 ? '#eab308' : '#22c55e'
                       return (
-                        <div key={d.id}>
-                          <div className="flex items-center justify-between mb-0.5">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[11px] font-bold text-neutral-600 w-4 text-right">{i + 1}</span>
-                              <span className="text-[11px] font-mono font-semibold text-white">{d.id}</span>
-                            </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
-                              <span
-                                className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
-                                style={{ color, background: `${color}18`, border: `1px solid ${color}30` }}
-                              >
-                                {d.score >= 70 ? 'Alto' : d.score >= 40 ? 'Medio' : 'Bajo'}
-                              </span>
-                              <span className="text-[13px] font-bold tabular-nums" style={{ color }}>{d.score}</span>
+                        <div key={d.id} className="flex items-center gap-2">
+                          {/* índice + id */}
+                          <span className="text-[11px] font-bold text-neutral-600 w-4 text-right flex-shrink-0">{i + 1}</span>
+                          <span className="text-[11px] font-mono font-semibold text-white w-24 truncate flex-shrink-0">{d.id}</span>
+                          {/* barra — crece pero respeta el padding de la derecha */}
+                          <div className="flex-1 min-w-0 pr-2">
+                            <div className="h-1.5 rounded-full bg-[#2A2A2A] overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all duration-700"
+                                style={{
+                                  width: `${d.score}%`,
+                                  background: d.score >= 70
+                                    ? 'linear-gradient(90deg,#ef4444,#b91c1c)'
+                                    : d.score >= 40 ? '#eab308' : '#22c55e',
+                                }}
+                              />
                             </div>
                           </div>
-                          <div className="h-1.5 rounded-full bg-[#2A2A2A] overflow-hidden ml-5">
-                            <div
-                              className="h-full rounded-full transition-all duration-700"
-                              style={{
-                                width: `${d.score}%`,
-                                background: d.score >= 70
-                                  ? 'linear-gradient(90deg,#ef4444,#b91c1c)'
-                                  : d.score >= 40 ? '#eab308' : '#22c55e',
-                              }}
-                            />
+                          {/* badge + número — columna fija a la derecha */}
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <span
+                              className="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                              style={{ color, background: `${color}18`, border: `1px solid ${color}30` }}
+                            >
+                              {d.score >= 70 ? 'Alto' : d.score >= 40 ? 'Medio' : 'Bajo'}
+                            </span>
+                            <span className="text-[13px] font-bold tabular-nums w-6 text-right" style={{ color }}>{d.score}</span>
                           </div>
                         </div>
                       )
@@ -797,48 +804,48 @@ export default function DashboardPage() {
               <div className="grid-stack-item-content">
                 <Card title="Tendencia Mensual · Siniestros" accent="#C8FF00" tooltip="Evolución mensual del número de siniestros reportados. Permite identificar estacionalidad o picos de fraude en el tiempo.">
                   <div
-                    role="button" tabIndex={0} className="outline-none h-full flex flex-col justify-between"
+                    role="button" tabIndex={0} className="outline-none h-full flex flex-col justify-between gap-1"
                     onKeyDown={e => {
                       if (e.key === 'ArrowLeft') setSemIdx(p => p === null ? monthLabels.length - 1 : (monthLabels.length + p - 1) % monthLabels.length)
                       if (e.key === 'ArrowRight') setSemIdx(p => p === null ? 0 : (p + 1) % monthLabels.length)
                     }}
                     onFocus={() => setSemIdx(p => p ?? 0)}
                   >
-                    <div>
-                      <p className="text-neutral-500 text-[10px]">{semIdx === null ? 'Últimos 12 meses' : monthLabels[semIdx]}</p>
-                      <div className="flex items-end justify-between border-b border-[#eab308]/20 pb-1.5 mb-2">
-                        <span className="text-xl font-bold text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-neutral-500 text-[10px] leading-none mb-0.5">{semIdx === null ? 'Últimos 12 meses' : monthLabels[semIdx]}</p>
+                        <span className="text-xl font-bold text-white leading-none">
                           {monthTotals[semIdx ?? monthTotals.length - 1] ?? 0}
                           <span className="text-[10px] text-neutral-500 ml-1">casos</span>
                         </span>
-                        <SparkLineChart
-                          data={monthTotals}
-                          height={50} width={180}
-                          area showHighlight color="#eab308"
-                          onHighlightedAxisChange={items => setSemIdx(items[0]?.dataIndex ?? null)}
-                          highlightedAxis={semIdx === null ? [] : [{ axisId: 'mes', dataIndex: semIdx }]}
-                          xAxis={{ id: 'mes', data: monthLabels }}
-                          yAxis={{ domainLimit: (_, max) => ({ min: -max / 6, max }) }}
-                          axisHighlight={{ x: 'line' }}
-                          margin={{ bottom: 0, top: 4, left: 4, right: 0 }}
-                          baseline="min"
-                          sx={{
-                            [`& .${lineClasses.area}`]: { opacity: 0.15 },
-                            [`& .${lineClasses.line}`]: { strokeWidth: 2.5 },
-                            [`& .${chartsAxisHighlightClasses.root}`]: { stroke: '#eab308', strokeDasharray: 'none', strokeWidth: 1.5 },
-                          }}
-                          slotProps={{ lineHighlight: { r: 4 } }}
-                        />
                       </div>
+                      <SparkLineChart
+                        data={monthTotals}
+                        height={42} width={160}
+                        area showHighlight color="#eab308"
+                        onHighlightedAxisChange={items => setSemIdx(items[0]?.dataIndex ?? null)}
+                        highlightedAxis={semIdx === null ? [] : [{ axisId: 'mes', dataIndex: semIdx }]}
+                        xAxis={{ id: 'mes', data: monthLabels }}
+                        yAxis={{ domainLimit: (_, max) => ({ min: -max / 6, max }) }}
+                        axisHighlight={{ x: 'line' }}
+                        margin={{ bottom: 0, top: 4, left: 4, right: 4 }}
+                        baseline="min"
+                        sx={{
+                          [`& .${lineClasses.area}`]: { opacity: 0.15 },
+                          [`& .${lineClasses.line}`]: { strokeWidth: 2.5 },
+                          [`& .${chartsAxisHighlightClasses.root}`]: { stroke: '#eab308', strokeDasharray: 'none', strokeWidth: 1.5 },
+                        }}
+                        slotProps={{ lineHighlight: { r: 4 } }}
+                      />
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex gap-3 flex-wrap">
                       {[
                         { label: 'Rojos',     data: monthRojos,     color: '#ef4444' },
                         { label: 'Amarillos', data: monthAmarillos, color: '#eab308' },
                         { label: 'Verdes',    data: monthVerdes,    color: '#22c55e' },
                       ].map(({ label, data, color }) => (
-                        <div key={label} className="flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full" style={{ background: color }} />
+                        <div key={label} className="flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
                           <span className="text-[10px] text-neutral-500">{label}:</span>
                           <span className="text-[10px] font-semibold" style={{ color }}>
                             {data[semIdx ?? data.length - 1] ?? 0}
@@ -1135,7 +1142,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ── Cola de Revisión Humana ───────────────────────────────── */}
-            <div className="grid-stack-item" gs-x={0} gs-y={17} gs-w={12} gs-h={4}>
+            <div className="grid-stack-item" gs-x={4} gs-y={22} gs-w={4} gs-h={4}>
               <div className="grid-stack-item-content">
                 <div className="bg-[#0F0F0F] border border-[#1A1A1A] rounded-2xl p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -1205,7 +1212,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ── Kanban Revisión por Revisor ─────────────────────────── */}
-            <div className="grid-stack-item" gs-x={0} gs-y={21} gs-w={12} gs-h={6}>
+            <div className="grid-stack-item" gs-x={6} gs-y={17} gs-w={6} gs-h={5}>
               <div className="grid-stack-item-content">
                 <div className="bg-[#0F0F0F] border border-[#1A1A1A] rounded-2xl p-4 h-full flex flex-col">
                   <div className="flex items-center justify-between mb-4 flex-shrink-0">

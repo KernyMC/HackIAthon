@@ -221,8 +221,7 @@ function TourNavigator() {
 }
 
 // ── Dark-theme styles ─────────────────────────────────────────────────────────
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type StyleFn = (base: any, state?: any) => any
+type StyleFn = (base: Record<string, unknown>, state?: Record<string, unknown>) => Record<string, unknown>
 
 const tourStyles: Record<string, StyleFn> = {
   popover: (base) => ({

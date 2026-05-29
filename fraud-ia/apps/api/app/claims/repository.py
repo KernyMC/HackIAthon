@@ -1,11 +1,27 @@
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from typing import Optional
+import time
+
+# Simple in-memory TTL cache — avoids hitting AlloyDB on every dashboard render
+_cache: dict = {}
+_CACHE_TTL = 60  # seconds
+
+
+def _cached(key: str, ttl: int, fn):
+    now = time.monotonic()
+    entry = _cache.get(key)
+    if entry and now - entry["ts"] < ttl:
+        return entry["val"]
+    val = fn()
+    _cache[key] = {"val": val, "ts": now}
+    return val
 
 
 def get_kpis(db: Session) -> dict:
-    row = db.execute(text("SELECT * FROM claims.v_kpis")).mappings().one()
-    return dict(row)
+    return _cached("kpis", _CACHE_TTL, lambda: dict(
+        db.execute(text("SELECT * FROM claims.v_kpis")).mappings().one()
+    ))
 
 
 def list_siniestros(
@@ -134,6 +150,126 @@ def get_narrativas_similares(db: Session, threshold: float = 0.22, limit: int = 
         },
         "clusters": clusters,
         "pares": pares,
+    }
+
+
+def _parse_alerta(raw: str) -> tuple[str, str]:
+    """Split 'RF-01: texto descriptivo' into (codigo, descripcion).
+    Falls back to (raw, raw) when the format doesn't match."""
+    if ": " in raw:
+        parts = raw.split(": ", 1)
+        return parts[0].strip(), parts[1].strip()
+    return raw.strip(), raw.strip()
+
+
+def get_alertas_analytics(db: Session) -> dict:
+    rows = db.execute(text("""
+        SELECT
+            alerta,
+            COUNT(*) AS frecuencia
+        FROM claims.siniestros,
+             jsonb_array_elements_text(alertas_activadas) AS alerta
+        WHERE alertas_activadas IS NOT NULL
+          AND alertas_activadas != 'null'::jsonb
+        GROUP BY alerta
+        ORDER BY frecuencia DESC
+        LIMIT 20
+    """)).mappings().all()
+
+    items = []
+    total_alertas = 0
+    for r in rows:
+        codigo, descripcion = _parse_alerta(r["alerta"])
+        freq = int(r["frecuencia"])
+        total_alertas += freq
+        items.append({"codigo": codigo, "descripcion": descripcion, "frecuencia": freq})
+
+    casos_con_alertas = db.execute(text("""
+        SELECT COUNT(*) FROM claims.siniestros
+        WHERE alertas_activadas IS NOT NULL
+          AND alertas_activadas != 'null'::jsonb
+          AND jsonb_array_length(alertas_activadas) > 0
+    """)).scalar() or 0
+
+    return {
+        "total_alertas": total_alertas,
+        "reglas_activadas": len(items),
+        "casos_con_alertas": int(casos_con_alertas),
+        "items": items,
+    }
+
+
+def get_resumen_ejecutivo(db: Session) -> dict:
+    # KPIs base
+    kpis_row = db.execute(text("SELECT * FROM claims.v_kpis")).mappings().one()
+    kpis = dict(kpis_row)
+
+    # Top 5 reglas más frecuentes
+    alerta_rows = db.execute(text("""
+        SELECT
+            alerta,
+            COUNT(*) AS frecuencia
+        FROM claims.siniestros,
+             jsonb_array_elements_text(alertas_activadas) AS alerta
+        WHERE alertas_activadas IS NOT NULL
+          AND alertas_activadas != 'null'::jsonb
+        GROUP BY alerta
+        ORDER BY frecuencia DESC
+        LIMIT 5
+    """)).mappings().all()
+
+    top_reglas = []
+    for r in alerta_rows:
+        codigo, descripcion = _parse_alerta(r["alerta"])
+        top_reglas.append({"codigo": codigo, "descripcion": descripcion, "frecuencia": int(r["frecuencia"])})
+
+    # Top ramos
+    ramo_rows = db.execute(text("""
+        SELECT
+            ramo,
+            COUNT(*) AS total,
+            COUNT(*) FILTER (WHERE nivel_riesgo = 'Rojo Alto') AS rojos,
+            COUNT(*) FILTER (WHERE nivel_riesgo = 'Amarillo Medio') AS amarillos
+        FROM claims.siniestros
+        GROUP BY ramo
+        ORDER BY total DESC
+        LIMIT 8
+    """)).mappings().all()
+
+    top_ramos = [
+        {
+            "ramo": r["ramo"],
+            "total": int(r["total"]),
+            "rojos": int(r["rojos"]),
+            "amarillos": int(r["amarillos"]),
+        }
+        for r in ramo_rows
+    ]
+
+    # Últimos 30 días
+    sin_30 = db.execute(text("""
+        SELECT COUNT(*) FROM claims.siniestros
+        WHERE fecha_reporte >= NOW() - INTERVAL '30 days'
+    """)).scalar() or 0
+
+    rojos_30 = db.execute(text("""
+        SELECT COUNT(*) FROM claims.siniestros
+        WHERE fecha_reporte >= NOW() - INTERVAL '30 days'
+          AND nivel_riesgo = 'Rojo Alto'
+    """)).scalar() or 0
+
+    return {
+        "total_siniestros": kpis.get("total_siniestros", 0),
+        "casos_rojos": kpis.get("casos_rojos", 0),
+        "casos_amarillos": kpis.get("casos_amarillos", 0),
+        "casos_verdes": kpis.get("casos_verdes", 0),
+        "monto_total_reclamado": float(kpis.get("monto_total_reclamado") or 0),
+        "monto_en_riesgo": float(kpis.get("monto_rojo_reclamado") or 0),
+        "score_promedio": float(kpis.get("score_promedio") or 0),
+        "top_reglas": top_reglas,
+        "top_ramos": top_ramos,
+        "siniestros_ultimos_30_dias": int(sin_30),
+        "casos_rojos_ultimos_30_dias": int(rojos_30),
     }
 
 

@@ -8,9 +8,11 @@ import {
   FileText,
   FilePlus,
   Building2,
+  BarChart3,
   MessageSquare,
   Network,
   Home,
+  ShieldAlert,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -19,7 +21,9 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/siniestros', label: 'Siniestros', icon: FileText },
   { href: '/evaluar', label: 'Evaluar', icon: FilePlus },
+  { href: '/reglas', label: 'Reglas', icon: ShieldAlert },
   { href: '/proveedores', label: 'Proveedores', icon: Building2 },
+  { href: '/reportes', label: 'Reportes', icon: BarChart3 },
   { href: '/chat', label: 'Agente IA', icon: MessageSquare },
   { href: '/arquitectura', label: 'Arquitectura', icon: Network },
 ]

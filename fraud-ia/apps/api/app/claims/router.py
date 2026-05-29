@@ -35,6 +35,16 @@ def list_siniestros(
     )
 
 
+@router.get("/analytics/alertas", response_model=schemas.AlertasAnalyticsResponse)
+def get_alertas_analytics(db: Session = Depends(get_db)):
+    return repository.get_alertas_analytics(db)
+
+
+@router.get("/analytics/resumen", response_model=schemas.ResumenEjecutivo)
+def get_resumen_ejecutivo(db: Session = Depends(get_db)):
+    return repository.get_resumen_ejecutivo(db)
+
+
 @router.get("/narrativas/similares")
 def get_narrativas_similares(
     threshold: float = Query(0.22, ge=0.0, le=1.0),

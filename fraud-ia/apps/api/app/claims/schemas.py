@@ -75,3 +75,39 @@ class SiniestroPage(BaseModel):
     total: int
     limit: int
     offset: int
+
+
+# ── Analytics schemas ──────────────────────────────────────────────────────────
+
+class AlertaFrecuencia(BaseModel):
+    codigo: str
+    descripcion: str
+    frecuencia: int
+
+
+class AlertasAnalyticsResponse(BaseModel):
+    total_alertas: int
+    reglas_activadas: int
+    casos_con_alertas: int
+    items: List[AlertaFrecuencia]
+
+
+class RamoResumen(BaseModel):
+    ramo: str
+    total: int
+    rojos: int
+    amarillos: int
+
+
+class ResumenEjecutivo(BaseModel):
+    total_siniestros: int
+    casos_rojos: int
+    casos_amarillos: int
+    casos_verdes: int
+    monto_total_reclamado: float
+    monto_en_riesgo: float
+    score_promedio: float
+    top_reglas: List[AlertaFrecuencia]
+    top_ramos: List[RamoResumen]
+    siniestros_ultimos_30_dias: int
+    casos_rojos_ultimos_30_dias: int

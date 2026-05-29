@@ -225,3 +225,30 @@ export interface RevisionAccionPayload {
   accion: 'aprobar' | 'rechazar' | 'reasignar'
   id_revisor_nuevo?: string
 }
+
+export interface AlertaFrecuencia {
+  codigo: string
+  descripcion: string
+  frecuencia: number
+}
+
+export interface AlertasAnalytics {
+  total_alertas: number
+  reglas_activadas: number
+  casos_con_alertas: number
+  items: AlertaFrecuencia[]
+}
+
+export interface ResumenEjecutivo {
+  total_siniestros: number
+  casos_rojos: number
+  casos_amarillos: number
+  casos_verdes: number
+  monto_total_reclamado: number
+  monto_en_riesgo: number
+  score_promedio: number
+  top_reglas: AlertaFrecuencia[]
+  top_ramos: { ramo: string; total: number; rojos: number; amarillos: number }[]
+  siniestros_ultimos_30_dias: number
+  casos_rojos_ultimos_30_dias: number
+}

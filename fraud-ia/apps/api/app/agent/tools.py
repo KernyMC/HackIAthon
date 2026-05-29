@@ -223,55 +223,54 @@ def listar_narrativas_similares(threshold: float = 0.22, limit: int = 15) -> dic
     """
     db = _get_db()
     try:
-        pares_sql = text("""
+        # Two queries instead of four: merge clusters + totals into one CTE
+        main_sql = text("""
+            WITH base AS (
+                SELECT
+                    n.id_par, n.id_siniestro_a, n.id_siniestro_b,
+                    n.cluster_narrativa,
+                    n.similitud_coseno_simulada AS similitud,
+                    n.descripcion_a, n.descripcion_b,
+                    p.nombre_proveedor
+                FROM claims.narrativas_similares n
+                LEFT JOIN claims.siniestros s ON s.id_siniestro = n.id_siniestro_a
+                LEFT JOIN claims.proveedores p ON p.id_proveedor = s.id_proveedor
+                WHERE n.similitud_coseno_simulada >= :threshold
+                  AND n.metodo = 'tfidf_cosine'
+            ),
+            clusters AS (
+                SELECT
+                    cluster_narrativa,
+                    COUNT(*) AS total_pares,
+                    ROUND(AVG(similitud)::numeric, 3) AS similitud_promedio,
+                    COUNT(DISTINCT id_siniestro_a) + COUNT(DISTINCT id_siniestro_b) AS casos_aprox
+                FROM base
+                GROUP BY cluster_narrativa
+                ORDER BY AVG(similitud) DESC
+            ),
+            totales AS (
+                SELECT
+                    COUNT(*) AS total_pares,
+                    COUNT(DISTINCT id_siniestro_a) + COUNT(DISTINCT id_siniestro_b) AS casos_involucrados
+                FROM base
+            )
             SELECT
-                n.id_par, n.id_siniestro_a, n.id_siniestro_b,
-                n.cluster_narrativa,
-                n.similitud_coseno_simulada AS similitud,
-                n.descripcion_a, n.descripcion_b,
-                p.nombre_proveedor
-            FROM claims.narrativas_similares n
-            LEFT JOIN claims.siniestros s ON s.id_siniestro = n.id_siniestro_a
-            LEFT JOIN claims.proveedores p ON p.id_proveedor = s.id_proveedor
-            WHERE n.similitud_coseno_simulada >= :threshold
-              AND n.metodo = 'tfidf_cosine'
-            ORDER BY n.similitud_coseno_simulada DESC
-            LIMIT :limit
+                (SELECT json_agg(clusters ORDER BY similitud_promedio DESC) FROM clusters) AS clusters,
+                (SELECT json_agg(base ORDER BY similitud DESC LIMIT :limit) FROM base) AS pares,
+                (SELECT row_to_json(totales) FROM totales) AS totales
         """)
-        pares = [dict(r) for r in db.execute(pares_sql, {"threshold": threshold, "limit": limit}).mappings()]
+        row = db.execute(main_sql, {"threshold": threshold, "limit": limit}).mappings().one()
 
-        clusters_sql = text("""
-            SELECT
-                cluster_narrativa,
-                COUNT(*) AS total_pares,
-                ROUND(AVG(similitud_coseno_simulada)::numeric, 3) AS similitud_promedio,
-                COUNT(DISTINCT id_siniestro_a) + COUNT(DISTINCT id_siniestro_b) AS casos_aprox
-            FROM claims.narrativas_similares
-            WHERE similitud_coseno_simulada >= :threshold AND metodo = 'tfidf_cosine'
-            GROUP BY cluster_narrativa
-            ORDER BY AVG(similitud_coseno_simulada) DESC
-        """)
-        clusters = [dict(r) for r in db.execute(clusters_sql, {"threshold": threshold}).mappings()]
-
-        total_pares = db.execute(
-            text("SELECT COUNT(*) FROM claims.narrativas_similares WHERE similitud_coseno_simulada >= :t AND metodo = 'tfidf_cosine'"),
-            {"t": threshold}
-        ).scalar() or 0
-
-        casos_involucrados = db.execute(text("""
-            SELECT COUNT(DISTINCT sin_id) FROM (
-                SELECT id_siniestro_a AS sin_id FROM claims.narrativas_similares WHERE similitud_coseno_simulada >= :t AND metodo = 'tfidf_cosine'
-                UNION
-                SELECT id_siniestro_b AS sin_id FROM claims.narrativas_similares WHERE similitud_coseno_simulada >= :t AND metodo = 'tfidf_cosine'
-            ) u
-        """), {"t": threshold}).scalar() or 0
+        clusters = row["clusters"] or []
+        pares = row["pares"] or []
+        totales = row["totales"] or {}
 
         return {
             "tool": "listar_narrativas_similares",
             "resumen": {
                 "total_clusters": len(clusters),
-                "total_pares": int(total_pares),
-                "casos_involucrados": int(casos_involucrados),
+                "total_pares": int(totales.get("total_pares", 0)),
+                "casos_involucrados": int(totales.get("casos_involucrados", 0)),
             },
             "clusters": clusters,
             "pares_top": pares[:10],
@@ -290,41 +289,43 @@ def generar_resumen_ejecutivo() -> dict:
     """
     db = _get_db()
     try:
-        kpis = db.execute(text("SELECT * FROM claims.v_kpis")).mappings().one()
-
-        top_providers = db.execute(text("""
-            SELECT nombre_proveedor, casos_rojos, score_promedio, monto_total_reclamado
-            FROM claims.v_provider_risk
-            ORDER BY casos_rojos DESC
-            LIMIT 5
-        """)).mappings().all()
-
-        top_sin = db.execute(text("""
-            SELECT id_siniestro, ramo, ciudad, score_final, nivel_riesgo, accion_sugerida
-            FROM claims.siniestros
-            ORDER BY score_final DESC
-            LIMIT 5
-        """)).mappings().all()
-
-        sin_sin_docs = db.execute(text("""
-            SELECT COUNT(*) FROM claims.siniestros
-            WHERE documentos_completos = false AND nivel_riesgo = 'Rojo Alto'
-        """)).scalar()
-
-        sin_inicio = db.execute(text("""
-            SELECT COUNT(*) FROM claims.siniestros
-            WHERE dias_desde_inicio_poliza <= 30 AND nivel_riesgo IN ('Rojo Alto','Amarillo Medio')
-        """)).scalar()
+        # Single round-trip: CTE merges what were previously 5 separate queries
+        result = db.execute(text("""
+            WITH kpis AS (
+                SELECT * FROM claims.v_kpis
+            ),
+            top_sin AS (
+                SELECT id_siniestro, ramo, ciudad, score_final, nivel_riesgo, accion_sugerida
+                FROM claims.siniestros
+                ORDER BY score_final DESC NULLS LAST
+                LIMIT 5
+            ),
+            top_prov AS (
+                SELECT nombre_proveedor, casos_rojos, score_promedio, monto_total_reclamado
+                FROM claims.v_provider_risk
+                ORDER BY casos_rojos DESC
+                LIMIT 5
+            ),
+            hallazgos AS (
+                SELECT
+                    COUNT(*) FILTER (WHERE documentos_completos = false AND nivel_riesgo = 'Rojo Alto') AS rojos_sin_docs,
+                    COUNT(*) FILTER (WHERE dias_desde_inicio_poliza <= 30 AND nivel_riesgo IN ('Rojo Alto','Amarillo Medio')) AS altos_inicio_poliza
+                FROM claims.siniestros
+            )
+            SELECT
+                row_to_json(kpis) AS kpis,
+                (SELECT json_agg(top_sin) FROM top_sin) AS top_siniestros,
+                (SELECT json_agg(top_prov) FROM top_prov) AS top_proveedores,
+                row_to_json(hallazgos) AS hallazgos
+            FROM kpis, hallazgos
+        """)).mappings().one()
 
         return {
             "tool": "generar_resumen_ejecutivo",
-            "kpis": dict(kpis),
-            "top_proveedores_riesgo": [dict(r) for r in top_providers],
-            "top_siniestros_score": [dict(r) for r in top_sin],
-            "hallazgos": {
-                "casos_rojos_sin_documentos_completos": sin_sin_docs,
-                "casos_altos_cerca_inicio_poliza": sin_inicio,
-            },
+            "kpis": result["kpis"],
+            "top_proveedores_riesgo": result["top_proveedores"] or [],
+            "top_siniestros_score": result["top_siniestros"] or [],
+            "hallazgos": result["hallazgos"],
             "recomendaciones": [
                 "Priorizar revisión de los 10 casos con mayor score_final.",
                 "Investigar proveedores con más de 3 casos rojos.",

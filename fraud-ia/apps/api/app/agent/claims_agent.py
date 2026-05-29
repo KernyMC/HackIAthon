@@ -3,7 +3,6 @@ FraudIA Claims Agent using Google ADK.
 """
 import logging
 import json
-from typing import Any
 from .instructions import AGENT_INSTRUCTIONS
 from .tools import (
     buscar_conocimiento_negocio,
@@ -31,18 +30,19 @@ TOOLS = [
     leer_documento_peritaje,
 ]
 
+# Module-level singletons — created once, reused across all requests
 _agent = None
+_runner = None
+_session_service = None
 
 
 def _get_agent():
     global _agent
     if _agent is not None:
         return _agent
-
     try:
         from google.adk.agents import Agent
         from ..core.config import get_settings
-
         settings = get_settings()
         _agent = Agent(
             name="fraudia_claims_assistant",
@@ -58,37 +58,57 @@ def _get_agent():
     return _agent
 
 
-async def run_agent(
-    session_id: str, message: str, db=None
-) -> dict:
-    """
-    Run the agent for a given user message. Returns answer + metadata.
-    """
-    agent = _get_agent()
+def _get_runner():
+    """Returns a module-level Runner singleton. Creating it per-request adds ~1-2s overhead."""
+    global _runner, _session_service
+    if _runner is not None:
+        return _runner, _session_service
 
-    if agent is not None:
-        return await _run_adk_agent(agent, session_id, message, db)
+    agent = _get_agent()
+    if agent is None:
+        return None, None
+
+    try:
+        from google.adk.runners import Runner
+        from google.adk.sessions import InMemorySessionService
+
+        _session_service = InMemorySessionService()
+        _runner = Runner(
+            agent=agent,
+            app_name="fraudia",
+            session_service=_session_service,
+        )
+        logger.info("ADK Runner initialized successfully")
+    except Exception as e:
+        logger.warning(f"ADK Runner init failed: {e}")
+        _runner = None
+        _session_service = None
+
+    return _runner, _session_service
+
+
+async def run_agent(session_id: str, message: str, db=None) -> dict:
+    runner, session_service = _get_runner()
+
+    if runner is not None:
+        return await _run_adk_agent(runner, session_service, session_id, message, db)
     else:
         return await _run_fallback_agent(session_id, message, db)
 
 
-async def _run_adk_agent(agent, session_id: str, message: str, db) -> dict:
+async def _run_adk_agent(runner, session_service, session_id: str, message: str, db) -> dict:
     try:
-        from google.adk.runners import Runner
-        from google.adk.sessions import InMemorySessionService
         from google.genai.types import Content, Part
 
-        session_service = InMemorySessionService()
-        runner = Runner(
-            agent=agent,
-            app_name="fraudia",
-            session_service=session_service,
-        )
-        session = await session_service.create_session(
-            app_name="fraudia",
-            user_id=session_id,
-            session_id=session_id,
-        )
+        # Create session only if it doesn't already exist in this service instance
+        try:
+            await session_service.get_session(
+                app_name="fraudia", user_id=session_id, session_id=session_id
+            )
+        except Exception:
+            await session_service.create_session(
+                app_name="fraudia", user_id=session_id, session_id=session_id
+            )
 
         user_content = Content(role="user", parts=[Part(text=message)])
         tools_used = []
@@ -116,17 +136,34 @@ async def _run_adk_agent(agent, session_id: str, message: str, db) -> dict:
         return await _run_fallback_agent(session_id, message, db)
 
 
-async def _run_fallback_agent(session_id: str, message: str, db) -> dict:
-    """
-    Fallback: use Gemini directly with tool dispatching based on message keywords.
-    """
-    from ..core.config import get_settings
+# Initialized once at module level to avoid calling vertexai.init() on every request
+_vertexai_initialized = False
 
+
+def _ensure_vertexai():
+    global _vertexai_initialized
+    if _vertexai_initialized:
+        return
+    try:
+        import vertexai
+        from ..core.config import get_settings
+        settings = get_settings()
+        vertexai.init(
+            project=settings.google_cloud_project,
+            location=settings.google_cloud_location,
+        )
+        _vertexai_initialized = True
+        logger.info("Vertex AI initialized")
+    except Exception as e:
+        logger.warning(f"vertexai.init failed: {e}")
+
+
+async def _run_fallback_agent(session_id: str, message: str, db) -> dict:
+    from ..core.config import get_settings
     settings = get_settings()
 
     tool_result = _dispatch_tool_by_keyword(message)
     tool_name = tool_result.get("tool", "buscar_conocimiento_negocio")
-
     context = json.dumps(tool_result, ensure_ascii=False, default=str)[:4000]
 
     prompt = f"""
@@ -140,12 +177,8 @@ Datos recuperados por herramienta '{tool_name}':
 Responde en español de manera clara y profesional para un analista de seguros.
 """
     try:
-        import vertexai
+        _ensure_vertexai()
         from vertexai.generative_models import GenerativeModel
-        vertexai.init(
-            project=settings.google_cloud_project,
-            location=settings.google_cloud_location,
-        )
         model = GenerativeModel(settings.gemini_model)
         response = model.generate_content(prompt)
         answer = response.text

@@ -14,6 +14,8 @@ import type {
   KanbanColumn,
   RevisionAccionPayload,
   Revisor,
+  AlertasAnalytics,
+  ResumenEjecutivo,
 } from './types'
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
@@ -117,6 +119,14 @@ export async function resolverRevision(
     method: 'PATCH',
     body: JSON.stringify(payload),
   })
+}
+
+export async function getAlertasAnalytics(): Promise<AlertasAnalytics> {
+  return apiFetch<AlertasAnalytics>('/api/analytics/alertas')
+}
+
+export async function getResumenEjecutivo(): Promise<ResumenEjecutivo> {
+  return apiFetch<ResumenEjecutivo>('/api/analytics/resumen')
 }
 
 export async function healthCheck(): Promise<{ status: string }> {

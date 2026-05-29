@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { RotateCcw, RefreshCw, Minimize2, LayoutDashboard, BookOpen } from 'lucide-react'
+import { RotateCcw, RefreshCw, Minimize2, LayoutDashboard, Sparkles } from 'lucide-react'
 import { useTour } from '@/components/Tour'
 
 interface Props {
@@ -75,10 +75,12 @@ export default function DashboardNavbar({
           <button
             onClick={startTour}
             title="Ver tutorial guiado del dashboard"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1C1C1C] hover:bg-[#242424] text-neutral-400 hover:text-[#C8FF00] text-sm border border-[#2A2A2A] hover:border-[#C8FF00]/30 transition-all cursor-pointer font-semibold"
+            className="relative flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#FF6500] to-[#f59e0b] text-black font-black text-sm cursor-pointer overflow-hidden transition-all duration-200 hover:scale-105 active:scale-100 shadow-[0_0_18px_rgba(255,101,0,0.4)] hover:shadow-[0_0_28px_rgba(255,101,0,0.65)] group"
           >
-            <BookOpen className="w-4 h-4" />
-            <span className="hidden sm:inline">Ver tutorial</span>
+            {/* pulse ring */}
+            <span className="absolute inset-0 rounded-xl animate-ping opacity-20 bg-[#FF6500]" />
+            <Sparkles className="w-4 h-4 flex-shrink-0 relative z-10" />
+            <span className="hidden sm:inline relative z-10">Ver tutorial</span>
           </button>
 
           {/* Ask AI */}

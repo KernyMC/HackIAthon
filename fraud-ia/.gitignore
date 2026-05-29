@@ -61,3 +61,6 @@ loader_db_password.txt
 docs/superpowers/
 presentation/
 scripts/
+
+# Deploy script (local use only)
+deploy.sh

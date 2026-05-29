@@ -445,7 +445,7 @@ export default function DashboardPage() {
           <div className="px-8 pt-6 pb-10 space-y-4 animate-fade-in">
 
             {/* KPI row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div data-tour="dashboard-kpis" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <KPICard label="Total siniestros"  value={kpis.total_siniestros.toLocaleString('es-EC')} icon={Activity}   accent="#C8FF00" pct={100} />
               <KPICard label="Score promedio"    value={formatScore(kpis.score_promedio)}              icon={TrendingUp}  accent="#FF6500" pct={Math.round(kpis.score_promedio)} subValue="/ 100 pts." />
               <KPICard label="Monto total"       value={formatMoney(kpis.monto_total_reclamado)}       icon={DollarSign}  accent="#C8FF00" />
@@ -473,7 +473,7 @@ export default function DashboardPage() {
 
             {/* Críticos + Top 10 */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] overflow-hidden" style={{ minHeight: 320 }}>
+              <div data-tour="dashboard-criticos" className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] overflow-hidden" style={{ minHeight: 320 }}>
                 <Card title="Casos Críticos · Revisar Hoy" accent="#ef4444">
                   <div className="flex flex-col gap-1.5 h-full overflow-auto">
                     {criticalCases.slice(0, 8).map(s => {
@@ -543,7 +543,7 @@ export default function DashboardPage() {
             {/* ── KPI cards ─────────────────────────────────────────────── */}
             {kpis && (<>
               {/* Total */}
-              <div className="grid-stack-item" gs-x={pos('kpi-total').x} gs-y={pos('kpi-total').y} gs-w={pos('kpi-total').w} gs-h={pos('kpi-total').h}>
+              <div data-tour="dashboard-kpis" className="grid-stack-item" gs-x={pos('kpi-total').x} gs-y={pos('kpi-total').y} gs-w={pos('kpi-total').w} gs-h={pos('kpi-total').h}>
                 <div className="grid-stack-item-content">
                   <KPICard label="Total siniestros" value={kpis.total_siniestros.toLocaleString('es-EC')} icon={Activity} accent="#C8FF00" pct={100} tooltip="Total de siniestros registrados en la base de datos. Incluye todos los niveles de riesgo y estados." />
                 </div>
@@ -609,7 +609,7 @@ export default function DashboardPage() {
             </>)}
 
             {/* ── Casos Críticos — revisar hoy ─────────────────────────── */}
-            <div className="grid-stack-item" gs-x={pos('criticos').x} gs-y={pos('criticos').y} gs-w={pos('criticos').w} gs-h={pos('criticos').h}>
+            <div data-tour="dashboard-criticos" className="grid-stack-item" gs-x={pos('criticos').x} gs-y={pos('criticos').y} gs-w={pos('criticos').w} gs-h={pos('criticos').h}>
               <div className="grid-stack-item-content">
                 <Card title="Casos Críticos · Revisar Hoy" accent="#ef4444" tooltip="Siniestros con score ≥ 70 (Rojo Alto) que requieren atención inmediata hoy. Ordenados por score descendente.">
                   <div className="flex flex-col gap-1.5 h-full overflow-auto">

@@ -77,7 +77,7 @@ export default function ProveedoresPage() {
 
       {/* ── Top 3 cards ────────────────────────────────────────────────────── */}
       {!loading && topThree.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div data-tour="proveedores-top3" className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {topThree.map((p, i) => {
             const total    = p.total_siniestros || 1
             const rojos    = Number(p.casos_rojos)    || 0

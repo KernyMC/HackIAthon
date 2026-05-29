@@ -69,6 +69,7 @@ export default function DashboardNavbar({
 
           {/* Ask AI */}
           <button
+            data-tour="dashboard-ai-btn"
             onClick={askAI}
             className="flex items-center gap-2 px-5 py-2.5 bg-[#C8FF00] hover:bg-[#d4ff33] text-black font-black rounded-xl text-sm transition-colors duration-150 cursor-pointer lime-glow"
           >

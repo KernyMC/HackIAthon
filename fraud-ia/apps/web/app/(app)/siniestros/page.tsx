@@ -247,7 +247,7 @@ export default function SiniestrosPage() {
 
       {/* KPI strip — always from global /api/kpis, not from paginated data */}
       {kpis && (
-        <div className="grid grid-cols-5 gap-2.5 mb-4">
+        <div data-tour-ready="siniestros-kpis" className="grid grid-cols-5 gap-2.5 mb-4">
           {[
             {
               label: 'Rojo Alto',
@@ -294,7 +294,7 @@ export default function SiniestrosPage() {
       )}
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2.5 mb-4 p-3.5 rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A]">
+      <div data-tour="siniestros-filtros" className="flex flex-wrap gap-2.5 mb-4 p-3.5 rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A]">
         <div className="flex items-center gap-2 text-neutral-600 text-xs self-center">
           <Filter className="w-3.5 h-3.5" />
           <span>Filtros</span>
@@ -361,7 +361,7 @@ export default function SiniestrosPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] overflow-hidden">
+      <div data-tour="siniestros-tabla" className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <RefreshCw className="w-5 h-5 text-[#C8FF00] animate-spin mr-3" />

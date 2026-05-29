@@ -341,7 +341,7 @@ export default function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="flex-none px-6 py-4 border-t border-[#2A2A2A] bg-[#0F0F0F]">
+      <div data-tour="chat-input" className="flex-none px-6 py-4 border-t border-[#2A2A2A] bg-[#0F0F0F]">
         <div className="flex gap-2 items-end">
           <input
             ref={inputRef}

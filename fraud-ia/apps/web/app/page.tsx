@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
+import { TourStartButton } from '@/components/Tour/TourStartButton'
 import { useState, useMemo } from 'react'
 import {
   ArrowRight,
@@ -115,7 +116,7 @@ export default function LandingPage() {
       </header>
 
       {/* ══ HERO ══════════════════════════════════════════════════════════════ */}
-      <section className="relative max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28">
+      <section data-tour="landing-hero" className="relative max-w-6xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28">
 
         {/* Ambient grid overlay */}
         <div className="absolute inset-0 pointer-events-none select-none" aria-hidden>
@@ -187,6 +188,7 @@ export default function LandingPage() {
               >
                 Chat con el Agente
               </Link>
+              <TourStartButton />
             </div>
           </div>
 
@@ -297,7 +299,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══ FEATURES ══════════════════════════════════════════════════════════ */}
-      <section className="border-t border-[#1a1a1a] py-20">
+      <section data-tour="landing-features" className="border-t border-[#1a1a1a] py-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="mb-12">
             <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.15em] mb-3">
@@ -335,7 +337,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══ METRICS ═══════════════════════════════════════════════════════════ */}
-      <section className="border-t border-b border-[#1a1a1a] py-16 bg-[#0c0c0c]">
+      <section data-tour="landing-metrics" className="border-t border-b border-[#1a1a1a] py-16 bg-[#0c0c0c]">
         <div className="max-w-6xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-[#1f1f1f]">
             {METRICS.map((m) => (
@@ -351,7 +353,7 @@ export default function LandingPage() {
       </section>
 
       {/* ══ CLOSING CTA ═══════════════════════════════════════════════════════ */}
-      <section className="py-24 md:py-32">
+      <section data-tour="landing-cta" className="py-24 md:py-32">
         <div className="max-w-3xl mx-auto px-6 text-center">
 
           <div className="inline-flex items-center gap-2 px-3 py-1.5 mb-6 rounded-full border border-[#C8FF00]/20 bg-[#C8FF00]/[0.06]">

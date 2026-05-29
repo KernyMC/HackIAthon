@@ -132,7 +132,7 @@ export default function EvaluarPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form data-tour="evaluar-form" onSubmit={handleSubmit} className="space-y-4">
 
             {/* Ramo */}
             <div>

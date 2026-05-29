@@ -1169,7 +1169,7 @@ export default function DashboardPage() {
                   ) : (
                     <div className="space-y-2">
                       {cola.map(item => (
-                        <a
+                        <Link
                           key={item.id_siniestro}
                           href={`/siniestros/${item.id_siniestro}`}
                           className="flex items-center gap-3 p-2.5 bg-[#141414] hover:bg-[#1A1A1A] border border-[#1E1E1E] hover:border-amber-500/20 rounded-xl transition-all group"
@@ -1196,17 +1196,17 @@ export default function DashboardPage() {
                             <div className="text-[11px] font-bold text-white">{item.score_final ?? '—'}</div>
                             <div className="text-[9px] text-neutral-600">pts</div>
                           </div>
-                        </a>
+                        </Link>
                       ))}
                     </div>
                   )}
 
-                  <a
+                  <Link
                     href="/siniestros?estado_revision=En+revisión"
                     className="flex items-center justify-center gap-1 mt-3 text-[10px] text-neutral-600 hover:text-amber-400 transition-colors"
                   >
                     Ver todos <ChevronRight className="w-3 h-3" />
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>

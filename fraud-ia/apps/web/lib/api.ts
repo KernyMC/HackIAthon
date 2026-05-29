@@ -108,7 +108,7 @@ export async function getKanban(): Promise<KanbanColumn[]> {
 }
 
 export async function getRevisores(): Promise<Revisor[]> {
-  return apiFetch<Revisor[]>('/api/revisiones/revisores')
+  return apiFetch<Revisor[]>('/api/revisores')
 }
 
 export async function resolverRevision(

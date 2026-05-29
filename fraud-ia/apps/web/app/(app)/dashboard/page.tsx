@@ -214,6 +214,8 @@ export default function DashboardPage() {
   const [kanban, setKanban]               = useState<KanbanColumn[]>([])
   const [revisores, setRevisores]         = useState<Revisor[]>([])
   const [kanbanLoading, setKanbanLoading] = useState(false)
+  const [dragCard, setDragCard]           = useState<{ id: string; fromRevisor: string } | null>(null)
+  const [dropTarget, setDropTarget]       = useState<string | null>(null)
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
@@ -1242,94 +1244,135 @@ export default function DashboardPage() {
                     </button>
                   </div>
 
-                  <div className="flex gap-3 overflow-x-auto flex-1 min-h-0 pb-1">
-                    {kanban.map(col => (
-                      <div
-                        key={col.revisor.id_revisor}
-                        className="flex-shrink-0 w-56 flex flex-col bg-[#141414] border border-[#1E1E1E] rounded-xl overflow-hidden"
-                      >
-                        <div className="px-3 py-2.5 border-b border-[#1E1E1E] bg-[#111] flex-shrink-0">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
-                                <span className="text-[9px] font-bold text-amber-400">
-                                  {col.revisor.nombre.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
-                                </span>
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-[11px] font-semibold text-white truncate">{col.revisor.nombre.split(' ')[0]}</p>
-                                <p className="text-[9px] text-neutral-600 truncate">{col.revisor.especialidad}</p>
-                              </div>
-                            </div>
-                            <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full flex-shrink-0">
-                              {col.casos.length}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-2 space-y-2">
-                          {col.casos.length === 0 && (
-                            <p className="text-[10px] text-neutral-700 text-center py-4">Sin casos asignados</p>
-                          )}
-                          {col.casos.map(card => {
-                            const scoreColor = (card.score_final ?? 0) >= 70 ? '#ef4444'
-                              : (card.score_final ?? 0) >= 40 ? '#eab308' : '#22c55e'
-                            return (
-                              <div key={card.id_siniestro} className="bg-[#1A1A1A] border border-[#252525] rounded-lg p-2.5 space-y-2">
-                                <div className="flex items-center justify-between">
-                                  <a
-                                    href={`/siniestros/${card.id_siniestro}`}
-                                    className="text-[10px] font-mono font-bold text-white hover:text-[#C8FF00] transition-colors truncate"
-                                  >
-                                    {card.id_siniestro}
-                                  </a>
-                                  <span className="text-[10px] font-bold flex-shrink-0" style={{ color: scoreColor }}>
-                                    {card.score_final?.toFixed(0) ?? '—'}
+                  {/* stopPropagation prevents GridStack from intercepting clicks/drags inside the kanban */}
+                  <div
+                    className="flex gap-3 overflow-x-auto flex-1 min-h-0 pb-1"
+                    onMouseDown={e => e.stopPropagation()}
+                    onPointerDown={e => e.stopPropagation()}
+                  >
+                    {kanban.map(col => {
+                      const isDropTarget = dropTarget === col.revisor.id_revisor
+                        && dragCard !== null
+                        && dragCard.fromRevisor !== col.revisor.id_revisor
+                      return (
+                        <div
+                          key={col.revisor.id_revisor}
+                          className={`flex-shrink-0 w-56 flex flex-col rounded-xl overflow-hidden border transition-colors ${
+                            isDropTarget
+                              ? 'border-amber-500/60 bg-amber-500/5'
+                              : 'border-[#1E1E1E] bg-[#141414]'
+                          }`}
+                          onDragOver={e => { e.preventDefault(); e.stopPropagation(); setDropTarget(col.revisor.id_revisor) }}
+                          onDragLeave={e => { e.stopPropagation(); setDropTarget(null) }}
+                          onDrop={e => {
+                            e.preventDefault(); e.stopPropagation()
+                            if (dragCard && dragCard.fromRevisor !== col.revisor.id_revisor) {
+                              handleRevisionAccion(dragCard.id, 'reasignar', col.revisor.id_revisor)
+                            }
+                            setDragCard(null); setDropTarget(null)
+                          }}
+                        >
+                          <div className="px-3 py-2.5 border-b border-[#1E1E1E] bg-[#111] flex-shrink-0">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-[9px] font-bold text-amber-400">
+                                    {col.revisor.nombre.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
                                   </span>
                                 </div>
-                                <div className="text-[9px] text-neutral-500 space-y-0.5">
-                                  <p className="truncate">{card.ramo} · {card.ciudad ?? '—'}</p>
-                                  <p>{card.dias_en_cola} día{card.dias_en_cola !== 1 ? 's' : ''} en cola</p>
+                                <div className="min-w-0">
+                                  <p className="text-[11px] font-semibold text-white truncate">{col.revisor.nombre.split(' ')[0]}</p>
+                                  <p className="text-[9px] text-neutral-600 truncate">{col.revisor.especialidad}</p>
                                 </div>
-                                <div className="flex gap-1">
-                                  <button
-                                    onClick={() => handleRevisionAccion(card.id_siniestro, 'aprobar')}
-                                    className="flex-1 flex items-center justify-center gap-1 py-1 text-[9px] font-semibold bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 hover:border-green-500/40 text-green-400 rounded transition-all"
-                                  >
-                                    <Check className="w-2.5 h-2.5" /> Aprobar
-                                  </button>
-                                  <button
-                                    onClick={() => handleRevisionAccion(card.id_siniestro, 'rechazar')}
-                                    className="flex-1 flex items-center justify-center gap-1 py-1 text-[9px] font-semibold bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/40 text-red-400 rounded transition-all"
-                                  >
-                                    <XCircle className="w-2.5 h-2.5" /> Rechazar
-                                  </button>
-                                </div>
-                                <select
-                                  defaultValue=""
-                                  onChange={e => {
-                                    if (e.target.value) {
-                                      handleRevisionAccion(card.id_siniestro, 'reasignar', e.target.value)
-                                      e.target.value = ''
-                                    }
-                                  }}
-                                  className="w-full text-[9px] bg-[#111] border border-[#2A2A2A] text-neutral-500 rounded px-1.5 py-1 focus:outline-none focus:border-amber-500/40"
-                                >
-                                  <option value="">Reasignar a...</option>
-                                  {revisores
-                                    .filter(r => r.id_revisor !== col.revisor.id_revisor)
-                                    .map(r => (
-                                      <option key={r.id_revisor} value={r.id_revisor}>
-                                        {r.nombre.split(' ')[0]} ({r.especialidad})
-                                      </option>
-                                    ))}
-                                </select>
                               </div>
-                            )
-                          })}
+                              <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                                {col.casos.length}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex-1 overflow-y-auto p-2 space-y-2 min-h-[60px]">
+                            {col.casos.length === 0 && (
+                              <p className={`text-[10px] text-center py-4 transition-colors ${isDropTarget ? 'text-amber-500/60' : 'text-neutral-700'}`}>
+                                {isDropTarget ? 'Soltar aquí' : 'Sin casos asignados'}
+                              </p>
+                            )}
+                            {col.casos.map(card => {
+                              const scoreColor = (card.score_final ?? 0) >= 70 ? '#ef4444'
+                                : (card.score_final ?? 0) >= 40 ? '#eab308' : '#22c55e'
+                              const isDragging = dragCard?.id === card.id_siniestro
+                              return (
+                                <div
+                                  key={card.id_siniestro}
+                                  draggable
+                                  onDragStart={e => {
+                                    e.stopPropagation()
+                                    setDragCard({ id: card.id_siniestro, fromRevisor: col.revisor.id_revisor })
+                                    e.dataTransfer.effectAllowed = 'move'
+                                  }}
+                                  onDragEnd={e => { e.stopPropagation(); setDragCard(null); setDropTarget(null) }}
+                                  className={`bg-[#1A1A1A] border rounded-lg p-2.5 space-y-2 cursor-grab active:cursor-grabbing transition-opacity ${
+                                    isDragging ? 'opacity-40 border-amber-500/40' : 'border-[#252525] hover:border-[#3A3A3A]'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <a
+                                      href={`/siniestros/${card.id_siniestro}`}
+                                      onClick={e => e.stopPropagation()}
+                                      className="text-[10px] font-mono font-bold text-white hover:text-[#C8FF00] transition-colors truncate"
+                                    >
+                                      {card.id_siniestro}
+                                    </a>
+                                    <span className="text-[10px] font-bold flex-shrink-0" style={{ color: scoreColor }}>
+                                      {card.score_final?.toFixed(0) ?? '—'}
+                                    </span>
+                                  </div>
+                                  <div className="text-[9px] text-neutral-500 space-y-0.5">
+                                    <p className="truncate">{card.ramo} · {card.ciudad ?? '—'}</p>
+                                    <p>{card.dias_en_cola} día{card.dias_en_cola !== 1 ? 's' : ''} en cola</p>
+                                  </div>
+                                  <div className="flex gap-1" onMouseDown={e => e.stopPropagation()}>
+                                    <button
+                                      onClick={e => { e.stopPropagation(); handleRevisionAccion(card.id_siniestro, 'aprobar') }}
+                                      className="flex-1 flex items-center justify-center gap-1 py-1 text-[9px] font-semibold bg-green-500/10 hover:bg-green-500/20 border border-green-500/20 hover:border-green-500/40 text-green-400 rounded transition-all"
+                                    >
+                                      <Check className="w-2.5 h-2.5" /> Aprobar
+                                    </button>
+                                    <button
+                                      onClick={e => { e.stopPropagation(); handleRevisionAccion(card.id_siniestro, 'rechazar') }}
+                                      className="flex-1 flex items-center justify-center gap-1 py-1 text-[9px] font-semibold bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/40 text-red-400 rounded transition-all"
+                                    >
+                                      <XCircle className="w-2.5 h-2.5" /> Rechazar
+                                    </button>
+                                  </div>
+                                  <select
+                                    defaultValue=""
+                                    onMouseDown={e => e.stopPropagation()}
+                                    onChange={e => {
+                                      e.stopPropagation()
+                                      if (e.target.value) {
+                                        handleRevisionAccion(card.id_siniestro, 'reasignar', e.target.value)
+                                        e.target.value = ''
+                                      }
+                                    }}
+                                    className="w-full text-[9px] bg-[#111] border border-[#2A2A2A] text-neutral-500 rounded px-1.5 py-1 focus:outline-none focus:border-amber-500/40 cursor-pointer"
+                                  >
+                                    <option value="">Reasignar a...</option>
+                                    {revisores
+                                      .filter(r => r.id_revisor !== col.revisor.id_revisor)
+                                      .map(r => (
+                                        <option key={r.id_revisor} value={r.id_revisor}>
+                                          {r.nombre.split(' ')[0]} — {r.especialidad}
+                                        </option>
+                                      ))}
+                                  </select>
+                                </div>
+                              )
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               </div>

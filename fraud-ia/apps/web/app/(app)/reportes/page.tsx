@@ -184,13 +184,13 @@ export default function ReportesPage() {
   }, [load])
 
   // Derived values — prefer resumen, fall back to kpis
-  const totalSiniestros = resumen?.total_siniestros ?? kpis?.total_siniestros ?? 0
-  const casosRojos = resumen?.casos_rojos ?? kpis?.casos_rojos ?? 0
-  const casosAmarillos = resumen?.casos_amarillos ?? kpis?.casos_amarillos ?? 0
-  const casosVerdes = resumen?.casos_verdes ?? kpis?.casos_verdes ?? 0
-  const scorePromedio = resumen?.score_promedio ?? kpis?.score_promedio ?? 0
-  const montoTotal = resumen?.monto_total_reclamado ?? kpis?.monto_total_reclamado ?? 0
-  const montoRiesgo = resumen?.monto_en_riesgo ?? kpis?.monto_rojo_reclamado ?? 0
+  const totalSiniestros = Number(resumen?.total_siniestros ?? kpis?.total_siniestros ?? 0)
+  const casosRojos = Number(resumen?.casos_rojos ?? kpis?.casos_rojos ?? 0)
+  const casosAmarillos = Number(resumen?.casos_amarillos ?? kpis?.casos_amarillos ?? 0)
+  const casosVerdes = Number(resumen?.casos_verdes ?? kpis?.casos_verdes ?? 0)
+  const scorePromedio = Number(resumen?.score_promedio ?? kpis?.score_promedio ?? 0)
+  const montoTotal = Number(resumen?.monto_total_reclamado ?? kpis?.monto_total_reclamado ?? 0)
+  const montoRiesgo = Number(resumen?.monto_en_riesgo ?? kpis?.monto_rojo_reclamado ?? 0)
 
   const maxAlertaFrecuencia =
     alertas && alertas.items.length > 0 ? alertas.items[0].frecuencia : 1

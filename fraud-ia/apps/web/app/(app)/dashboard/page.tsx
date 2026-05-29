@@ -1218,7 +1218,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ── Kanban Revisión por Revisor ─────────────────────────── */}
-            <div className="grid-stack-item" gs-x={6} gs-y={17} gs-w={6} gs-h={5}>
+            <div data-tour="dashboard-kanban" className="grid-stack-item" gs-x={6} gs-y={17} gs-w={6} gs-h={5}>
               <div className="grid-stack-item-content">
                 <div className="bg-[#0F0F0F] border border-[#1A1A1A] rounded-2xl p-4 h-full flex flex-col">
                   <div className="flex items-center justify-between mb-4 flex-shrink-0">

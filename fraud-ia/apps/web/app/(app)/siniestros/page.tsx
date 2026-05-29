@@ -300,7 +300,7 @@ export default function SiniestrosPage() {
           <span>Filtros</span>
         </div>
         {/* Tabs estado de revisión */}
-        <div className="flex gap-1 flex-wrap">
+        <div data-tour="siniestros-tabs" className="flex gap-1 flex-wrap">
           {[
             { value: 'todos',       label: 'Todos',        activeColor: 'text-neutral-300' },
             { value: 'Pendiente',   label: 'Sin revisar',  activeColor: 'text-neutral-400' },

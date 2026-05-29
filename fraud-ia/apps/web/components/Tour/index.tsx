@@ -41,7 +41,7 @@ export const TOUR_STEPS: AppStep[] = [
     ),
   },
 
-  // ── 2–4: Dashboard ────────────────────────────────────────────────────────
+  // ── 2–5: Dashboard ────────────────────────────────────────────────────────
   // readySelector waits for GridStack to finish layout before @reactour
   // measures element position (prevents the tooltip appearing at 0,0).
   {
@@ -63,8 +63,20 @@ export const TOUR_STEPS: AppStep[] = [
     content: (
       <Step
         title="Casos críticos — revisar hoy"
-        body="Siniestros con score ≥ 70 (Rojo Alto) ordenados por riesgo. Cada card muestra el ID, las alertas activadas y botones de acción rápida."
-        tip="El botón 'IA' inyecta el contexto del siniestro directamente al agente."
+        body="Siniestros con score ≥ 70 (Rojo Alto) ordenados por riesgo. Cada card muestra el ID, las alertas activadas y el botón IA para consultar al agente."
+        tip="El botón 'IA' inyecta el contexto del siniestro directamente al chat del agente."
+      />
+    ),
+  },
+  {
+    selector: '[data-tour="dashboard-kanban"]',
+    route: '/dashboard',
+    readySelector: '[data-tour-ready="dashboard-ready"]',
+    content: (
+      <Step
+        title="Tablero Kanban — revisión por analista"
+        body="Casos en estado 'En revisión' agrupados por analista asignado. Desde aquí puedes Aprobar, Rechazar o Reasignar un caso sin salir del dashboard."
+        tip="La asignación es automática según el ramo: Vehículos → Ana Morales, Salud → Carlos Jiménez, etc."
       />
     ),
   },
@@ -81,7 +93,7 @@ export const TOUR_STEPS: AppStep[] = [
     ),
   },
 
-  // ── 5–6: Siniestros ───────────────────────────────────────────────────────
+  // ── 6–8: Siniestros ───────────────────────────────────────────────────────
   {
     selector: '[data-tour="siniestros-filtros"]',
     route: '/siniestros',
@@ -94,19 +106,31 @@ export const TOUR_STEPS: AppStep[] = [
     ),
   },
   {
+    selector: '[data-tour="siniestros-tabs"]',
+    route: '/siniestros',
+    readySelector: '[data-tour-ready="siniestros-kpis"]',
+    content: (
+      <Step
+        title="Tabs de estado de revisión"
+        body="Filtra los siniestros por su estado en el flujo de revisión: Sin revisar (Pendiente) → En revisión → Aprobado / Rechazado."
+        tip="Al hacer clic en 'En revisión' desde el dashboard, la tabla abre directamente en ese tab."
+      />
+    ),
+  },
+  {
     selector: '[data-tour="siniestros-tabla"]',
     route: '/siniestros',
     readySelector: '[data-tour-ready="siniestros-kpis"]',
     content: (
       <Step
         title="Tabla de siniestros"
-        body="Todos los casos paginados con columnas ordenables. Haz clic en cualquier fila para ver el detalle completo con score, alertas y documentos."
-        tip="Las columnas tienen flechas ↕ — puedes ordenar por score, monto, etc."
+        body="Todos los casos paginados con columnas ordenables. Haz clic en cualquier fila para ver el detalle completo con score, alertas, gráficas y documentos."
+        tip="En el detalle del siniestro encontrarás el botón 'Enviar a revisión humana' para asignar al analista correspondiente."
       />
     ),
   },
 
-  // ── 7: Evaluar ───────────────────────────────────────────────────────────
+  // ── 9: Evaluar ───────────────────────────────────────────────────────────
   {
     selector: '[data-tour="evaluar-form"]',
     route: '/evaluar',
@@ -119,7 +143,7 @@ export const TOUR_STEPS: AppStep[] = [
     ),
   },
 
-  // ── 8: Proveedores ────────────────────────────────────────────────────────
+  // ── 10: Proveedores ────────────────────────────────────────────────────────
   {
     selector: '[data-tour="proveedores-top3"]',
     route: '/proveedores',
@@ -132,7 +156,7 @@ export const TOUR_STEPS: AppStep[] = [
     ),
   },
 
-  // ── 9: Chat ───────────────────────────────────────────────────────────────
+  // ── 11: Chat ───────────────────────────────────────────────────────────────
   {
     selector: '[data-tour="chat-input"]',
     route: '/chat',

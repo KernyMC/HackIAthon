@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, MessageSquare, Wrench, BookOpen, AlertTriangle, ChevronDown, BarChart2 } from 'lucide-react'
+import Image from 'next/image'
+import { Send, Wrench, BookOpen, AlertTriangle, ChevronDown, BarChart2 } from 'lucide-react'
 import { chat, getSiniestros, getProveedoresRiesgo, getKpis } from '@/lib/api'
 import type { ChatMessage, ChartData } from '@/lib/types'
 import { MarkdownContent } from '@/components/ui/markdown-content'
@@ -231,7 +232,7 @@ export default function ChatPage() {
       <div className="flex-none px-6 py-4 border-b border-[#2A2A2A] bg-[#0F0F0F]">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-[#C8FF00] flex items-center justify-center flex-shrink-0">
-            <MessageSquare className="w-4 h-4 text-black" />
+            <Image src="/logo.png" alt="FraudIA" width={22} height={22} className="brightness-0" />
           </div>
           <div>
             <h1 className="text-base font-bold text-white leading-tight">FraudIA Claims Assistant</h1>
@@ -246,7 +247,7 @@ export default function ChatPage() {
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} slide-in`}>
             {msg.role === 'assistant' && (
               <div className="w-7 h-7 rounded-xl bg-[#C8FF00] flex items-center justify-center flex-shrink-0 mt-0.5 mr-2">
-                <MessageSquare className="w-3.5 h-3.5 text-black" />
+                <Image src="/logo.png" alt="FraudIA" width={18} height={18} className="brightness-0" />
               </div>
             )}
             <div
@@ -299,7 +300,7 @@ export default function ChatPage() {
         {loading && (
           <div className="flex justify-start">
             <div className="w-7 h-7 rounded-xl bg-[#C8FF00] flex items-center justify-center flex-shrink-0 mt-0.5 mr-2">
-              <MessageSquare className="w-3.5 h-3.5 text-black" />
+              <Image src="/logo.png" alt="FraudIA" width={18} height={18} className="brightness-0" />
             </div>
             <div className="bg-[#1C1C1C] border border-[#2A2A2A] rounded-2xl rounded-bl-none px-4 py-3">
               <div className="flex gap-1.5 items-center">

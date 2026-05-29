@@ -56,3 +56,8 @@ web_url.txt
 postgres_password.txt
 app_db_password.txt
 loader_db_password.txt
+
+# Internal — not for the repo
+docs/superpowers/
+presentation/
+scripts/

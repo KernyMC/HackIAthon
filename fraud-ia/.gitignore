@@ -61,6 +61,9 @@ loader_db_password.txt
 docs/superpowers/
 presentation/
 scripts/
+CLAUDE.md
+hackiathon skill/
+infra/
 
 # Deploy script (local use only)
 deploy.sh

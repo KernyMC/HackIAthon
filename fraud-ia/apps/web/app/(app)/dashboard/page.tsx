@@ -219,6 +219,7 @@ export default function DashboardPage() {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [semIdx, setSemIdx]           = useState<number | null>(null)
   const [minimalista, setMinimalista] = useState(false)
+  const [gridReady, setGridReady]     = useState(false)
 
   const loadData = useCallback(async () => {
     setLoading(true); setError(null)
@@ -266,9 +267,11 @@ export default function DashboardPage() {
     }
   }
 
-  // GridStack init
+  // GridStack init — setGridReady(true) only after layout is painted so the
+  // tour tooltip measures the correct element position (not 0,0 from skeleton).
   useEffect(() => {
     if (!kpis || !gridRef.current) return
+    setGridReady(false)
     if (gridInst.current) { gridInst.current.destroy(false); gridInst.current = null }
     import('gridstack').then(({ GridStack }) => {
       if (!gridRef.current) return
@@ -277,6 +280,9 @@ export default function DashboardPage() {
           resizable: { handles: 'se' }, draggable: { handle: '.gs-drag-handle' }, animate: true },
         gridRef.current
       )
+      // Wait one rAF so the browser has painted the final positions before the
+      // tour polls for element coordinates.
+      requestAnimationFrame(() => setGridReady(true))
     })
     return () => { if (gridInst.current) { gridInst.current.destroy(false); gridInst.current = null } }
   }, [kpis, gridKey])
@@ -1349,6 +1355,8 @@ export default function DashboardPage() {
             border-radius: 16px !important;
           }
         `}</style>
+        {/* Sentinel for tour: only present after GridStack has finished layout */}
+        {gridReady && <span data-tour-ready="dashboard-ready" className="sr-only" aria-hidden />}
         </>)} {/* end !minimalista */}
 
       </div>

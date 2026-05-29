@@ -43,10 +43,11 @@ export default function EvaluarPage() {
     dias_entre_ocurrencia_reporte: '',
     documentos_completos: true,
   })
-  const [pdfFile, setPdfFile]   = useState<File | null>(null)
-  const [loading, setLoading]   = useState(false)
-  const [result, setResult]     = useState<EvaluarResult | null>(null)
-  const [error, setError]       = useState<string | null>(null)
+  const [pdfFile, setPdfFile]     = useState<File | null>(null)
+  const [loading, setLoading]     = useState(false)
+  const [loadingStep, setLoadingStep] = useState(0)
+  const [result, setResult]       = useState<EvaluarResult | null>(null)
+  const [error, setError]         = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const fileRef  = useRef<HTMLInputElement>(null)
   const dragRef  = useRef(0) // counter to handle enter/leave on children
@@ -85,9 +86,17 @@ export default function EvaluarPage() {
   const set = (k: string, v: string | boolean) =>
     setForm(f => ({ ...f, [k]: v }))
 
+  const LOADING_STEPS = [
+    'Verificando datos del siniestro...',
+    'Aplicando reglas de fraude...',
+    'Calculando score de riesgo...',
+    pdfFile ? 'Indexando documento PDF...' : 'Registrando siniestro...',
+  ]
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setLoadingStep(0)
     setError(null)
     setResult(null)
 
@@ -104,12 +113,27 @@ export default function EvaluarPage() {
     fd.append('documentos_completos', String(form.documentos_completos))
     if (pdfFile) fd.append('pdf_file', pdfFile)
 
+    // Cycle loading step messages every 2s while waiting for the API
+    const stepTimer = setInterval(() =>
+      setLoadingStep(s => Math.min(s + 1, LOADING_STEPS.length - 1))
+    , 2000)
+
+    // Abort after 90s so the UI never hangs indefinitely
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 90_000)
+
     try {
-      const res = await evaluarSiniestro(fd)
+      const res = await evaluarSiniestro(fd, controller.signal)
       setResult(res)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error desconocido')
+      if (err instanceof Error && err.name === 'AbortError') {
+        setError('La evaluación tardó demasiado. Intenta de nuevo.')
+      } else {
+        setError(err instanceof Error ? err.message : 'Error desconocido')
+      }
     } finally {
+      clearInterval(stepTimer)
+      clearTimeout(timeout)
       setLoading(false)
     }
   }
@@ -327,11 +351,22 @@ export default function EvaluarPage() {
             {loading && (
               <div className="h-full flex items-center justify-center border border-[#2A2A2A] rounded-2xl p-8">
                 <div className="text-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-[#C8FF00] mx-auto mb-3" />
-                  <p className="text-sm text-neutral-400">Calculando score y verificando proveedor...</p>
-                  {pdfFile && (
-                    <p className="text-xs text-neutral-600 mt-1">Indexando documento PDF...</p>
-                  )}
+                  <Loader2 className="w-8 h-8 animate-spin text-[#C8FF00] mx-auto mb-4" />
+                  <p className="text-sm text-neutral-400 transition-all duration-300">
+                    {LOADING_STEPS[loadingStep]}
+                  </p>
+                  <div className="flex items-center justify-center gap-1.5 mt-3">
+                    {LOADING_STEPS.map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-1 rounded-full transition-all duration-500"
+                        style={{
+                          width: i <= loadingStep ? 20 : 8,
+                          background: i <= loadingStep ? '#C8FF00' : '#2A2A2A',
+                        }}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             )}

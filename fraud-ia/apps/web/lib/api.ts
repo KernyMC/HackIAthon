@@ -76,11 +76,13 @@ export async function getNarrativasSimilares(threshold = 0.22): Promise<Narrativ
 }
 
 export async function evaluarSiniestro(
-  form: FormData
+  form: FormData,
+  signal?: AbortSignal,
 ): Promise<EvaluarResult> {
   const res = await fetch('/api/siniestros/evaluar', {
     method: 'POST',
     body: form,   // multipart — NO Content-Type header, browser lo pone automático
+    signal,
   })
   if (!res.ok) {
     const text = await res.text()

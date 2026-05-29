@@ -42,9 +42,12 @@ export const TOUR_STEPS: AppStep[] = [
   },
 
   // ── 2–4: Dashboard ────────────────────────────────────────────────────────
+  // readySelector waits for GridStack to finish layout before @reactour
+  // measures element position (prevents the tooltip appearing at 0,0).
   {
     selector: '[data-tour="dashboard-kpis"]',
     route: '/dashboard',
+    readySelector: '[data-tour-ready="dashboard-ready"]',
     content: (
       <Step
         title="KPIs del portafolio"
@@ -56,6 +59,7 @@ export const TOUR_STEPS: AppStep[] = [
   {
     selector: '[data-tour="dashboard-criticos"]',
     route: '/dashboard',
+    readySelector: '[data-tour-ready="dashboard-ready"]',
     content: (
       <Step
         title="Casos críticos — revisar hoy"
@@ -67,6 +71,7 @@ export const TOUR_STEPS: AppStep[] = [
   {
     selector: '[data-tour="dashboard-ai-btn"]',
     route: '/dashboard',
+    readySelector: '[data-tour-ready="dashboard-ready"]',
     content: (
       <Step
         title="Agente IA — resumen ejecutivo"
@@ -195,10 +200,10 @@ function TourNavigator() {
 
       if (targetOk && readyOk) {
         allReadySince++
-        // Wait 2 extra ticks (200 ms) after all elements are ready so the
-        // browser has time to apply any final layout shifts (e.g. KPI heights
-        // settling) before @reactour measures the target element's position.
-        if (allReadySince >= 2) {
+        // Wait 4 extra ticks (400 ms) after all elements are ready so the
+        // browser has time to apply any final layout shifts before @reactour
+        // measures the target element's position (GridStack animate ~300ms).
+        if (allReadySince >= 4) {
           clearInterval(pollRef.current!); pollRef.current = null; setIsOpen(true)
         }
       } else {

@@ -610,7 +610,7 @@ export default function LandingPage() {
                   key={q}
                   className="rounded-xl bg-[#161616] border border-[#222] px-4 py-3 hover:border-[#C8FF00]/20 transition-colors cursor-default"
                 >
-                  <p className="text-[12px] text-zinc-300 leading-snug mb-2">"{q}"</p>
+                  <p className="text-[12px] text-zinc-300 leading-snug mb-2">&quot;{q}&quot;</p>
                   <span className="text-[9px] font-mono text-zinc-700 bg-[#0d0d0d] px-1.5 py-0.5 rounded">
                     → {tool}
                   </span>

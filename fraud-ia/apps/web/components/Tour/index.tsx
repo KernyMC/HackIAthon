@@ -182,16 +182,27 @@ function TourNavigator() {
     setIsOpen(false)
 
     let attempts = 0
+    let allReadySince = 0   // tick count since both selectors were first satisfied
     pollRef.current = setInterval(() => {
       attempts++
       const targetOk = selector      ? Boolean(document.querySelector(selector))      : true
       const readyOk  = readySelector ? Boolean(document.querySelector(readySelector)) : true
       const timedOut = attempts >= 80   // 8 s hard limit
 
-      if ((targetOk && readyOk) || timedOut) {
-        clearInterval(pollRef.current!)
-        pollRef.current = null
-        setIsOpen(true)
+      if (timedOut) {
+        clearInterval(pollRef.current!); pollRef.current = null; setIsOpen(true); return
+      }
+
+      if (targetOk && readyOk) {
+        allReadySince++
+        // Wait 2 extra ticks (200 ms) after all elements are ready so the
+        // browser has time to apply any final layout shifts (e.g. KPI heights
+        // settling) before @reactour measures the target element's position.
+        if (allReadySince >= 2) {
+          clearInterval(pollRef.current!); pollRef.current = null; setIsOpen(true)
+        }
+      } else {
+        allReadySince = 0   // reset if something disappears
       }
     }, 100)
 

@@ -10,7 +10,4 @@ infra/alloydb-auth-proxy
 apps/web/node_modules
 apps/web/.next
 apps/web/tsconfig.tsbuildinfo
-*.png
-*.jpg
-*.jpeg
 presentation/

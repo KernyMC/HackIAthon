@@ -448,11 +448,7 @@ export default function SiniestroDetailPage() {
                   s.historial_siniestros_conductor ?? 0,
                 ],
                 barLabel: ({ value }) => value != null ? `${value} siniest.` : '',
-                colorMap: {
-                  type: 'piecewise',
-                  thresholds: [2, 3],
-                  colors: ['#22c55e', '#eab308', '#ef4444'],
-                },
+                color: '#C8FF00',
               }]}
               borderRadius={8}
               grid={{ vertical: true }}

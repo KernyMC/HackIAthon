@@ -1,5 +1,7 @@
 'use client'
 
+import DashboardSkeleton from './loading'
+import DashboardNavbar from '@/components/dashboard/DashboardNavbar'
 import { useEffect, useRef, useState, useCallback, useMemo, Fragment } from 'react'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import Alert from '@mui/material/Alert'
@@ -20,6 +22,7 @@ import { PieChart, pieClasses } from '@mui/x-charts/PieChart'
 import { useDrawingArea } from '@mui/x-charts/hooks'
 import { styled } from '@mui/material/styles'
 import { BarChart } from '@mui/x-charts/BarChart'
+import { LineChart } from '@mui/x-charts/LineChart'
 
 import {
   ShieldAlert, ShieldCheck, AlertTriangle, TrendingUp, DollarSign, Activity, RefreshCw, RotateCcw, MessageSquare, ExternalLink, UserCheck, Info, ChevronRight, Check, XCircle,
@@ -210,6 +213,7 @@ export default function DashboardPage() {
   const [error, setError]             = useState<string | null>(null)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [semIdx, setSemIdx]           = useState<number | null>(null)
+  const [minimalista, setMinimalista] = useState(false)
 
   const loadData = useCallback(async () => {
     setLoading(true); setError(null)
@@ -293,7 +297,11 @@ export default function DashboardPage() {
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b)).slice(-12)
   }, [allSin])
 
-  const monthLabels    = monthlyGroups.map(([m]) => m.replace('-', '/'))
+  const MONTH_NAMES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+  const monthLabels    = monthlyGroups.map(([m]) => {
+    const [year, mon] = m.split('-')
+    return `${MONTH_NAMES[parseInt(mon, 10) - 1]} ${year?.slice(2)}`
+  })
   const monthTotals    = monthlyGroups.map(([, v]) => v.total)
   const monthRojos     = monthlyGroups.map(([, v]) => v.rojos)
   const monthAmarillos = monthlyGroups.map(([, v]) => v.amarillos)
@@ -401,12 +409,7 @@ export default function DashboardPage() {
   const hl  = { highlight: 'item', fade: 'global' } as const
 
   // ── Loading / Error ───────────────────────────────────────────────────────
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-screen bg-[#111111]">
-      <RefreshCw className="w-6 h-6 text-[#C8FF00] animate-spin mr-3" />
-      <p className="text-neutral-500 text-sm">Cargando dashboard...</p>
-    </div>
-  )
+  if (loading) return <DashboardSkeleton />
   if (error) return (
     <div className="flex items-center justify-center min-h-screen bg-[#111111]">
       <div className="text-center">
@@ -422,25 +425,118 @@ export default function DashboardPage() {
     <ThemeProvider theme={muiDark}>
       <div className="bg-[#111111] min-h-screen pb-10">
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-8 pt-8 pb-4">
-          <div>
-            <p className="text-[10px] font-semibold text-neutral-600 uppercase tracking-widest mb-1">Overview</p>
-            <h1 className="text-4xl font-bold text-white leading-none">DASHBOARD</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            {lastUpdated && <p className="text-[11px] text-neutral-600">{lastUpdated.toLocaleTimeString('es-EC')}</p>}
-            <button onClick={() => setGridKey(k => k + 1)}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#1C1C1C] hover:bg-[#242424] text-neutral-500 text-xs border border-[#2A2A2A] transition-colors">
-              <RotateCcw className="w-3.5 h-3.5" /> Restablecer
-            </button>
-            <button onClick={loadData}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#1C1C1C] hover:bg-[#242424] text-neutral-300 text-xs border border-[#2A2A2A] transition-colors">
-              <RefreshCw className="w-3.5 h-3.5" /> Actualizar
-            </button>
-          </div>
-        </div>
+        {/* ── Navbar ─────────────────────────────────────────────────────── */}
+        <DashboardNavbar
+          lastUpdated={lastUpdated}
+          totalSiniestros={kpis?.total_siniestros ?? 0}
+          loading={loading}
+          minimalista={minimalista}
+          onToggleMinimalista={() => {
+            // Switching mini → full: the grid div will remount, so GridStack must reinit
+            if (minimalista) setGridKey(k => k + 1)
+            setMinimalista(v => !v)
+          }}
+          onRefresh={loadData}
+          onReset={() => setGridKey(k => k + 1)}
+        />
 
+        {/* ── Minimalist view ────────────────────────────────────────────── */}
+        {minimalista && kpis && (
+          <div className="px-8 pt-6 pb-10 space-y-4 animate-fade-in">
+
+            {/* KPI row */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <KPICard label="Total siniestros"  value={kpis.total_siniestros.toLocaleString('es-EC')} icon={Activity}   accent="#C8FF00" pct={100} />
+              <KPICard label="Score promedio"    value={formatScore(kpis.score_promedio)}              icon={TrendingUp}  accent="#FF6500" pct={Math.round(kpis.score_promedio)} subValue="/ 100 pts." />
+              <KPICard label="Monto total"       value={formatMoney(kpis.monto_total_reclamado)}       icon={DollarSign}  accent="#C8FF00" />
+              <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] p-4 flex flex-col justify-between hover:border-[#333] transition-colors">
+                <p className="text-[11px] text-neutral-600 font-semibold uppercase tracking-wider mb-3">Niveles de riesgo</p>
+                <div className="flex gap-3">
+                  {[
+                    { label: 'Rojo',     count: kpis.casos_rojos,    color: '#ef4444' },
+                    { label: 'Amarillo', count: kpis.casos_amarillos, color: '#eab308' },
+                    { label: 'Verde',    count: kpis.casos_verdes,    color: '#22c55e' },
+                  ].map(({ label, count, color }) => (
+                    <div key={label} className="flex-1 text-center">
+                      <p className="text-xl font-black tabular-nums" style={{ color }}>{count.toLocaleString('es-EC')}</p>
+                      <p className="text-[10px] text-neutral-600 mt-0.5">{label}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden flex gap-0.5 mt-3">
+                  <div className="h-full rounded-full" style={{ width: `${Math.round((kpis.casos_verdes / kpis.total_siniestros) * 100)}%`, background: '#22c55e' }} />
+                  <div className="h-full rounded-full" style={{ width: `${Math.round((kpis.casos_amarillos / kpis.total_siniestros) * 100)}%`, background: '#eab308' }} />
+                  <div className="h-full rounded-full" style={{ width: `${Math.round((kpis.casos_rojos / kpis.total_siniestros) * 100)}%`, background: '#ef4444' }} />
+                </div>
+              </div>
+            </div>
+
+            {/* Críticos + Top 10 */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] overflow-hidden" style={{ minHeight: 320 }}>
+                <Card title="Casos Críticos · Revisar Hoy" accent="#ef4444">
+                  <div className="flex flex-col gap-1.5 h-full overflow-auto">
+                    {criticalCases.slice(0, 8).map(s => {
+                      const alertas = parseAlerta(s.alertas_activadas).slice(0, 1)
+                      return (
+                        <div key={s.id_siniestro} className="rounded-xl bg-[#191919] border border-[#2A2A2A] px-3 py-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[12px] font-mono font-bold text-white">{s.id_siniestro}</span>
+                              <span className="text-[11px] px-1.5 py-0.5 rounded-full font-bold bg-red-500/20 text-red-400">{formatScore(s.score_final)} pts</span>
+                            </div>
+                            <Link href={`/siniestros/${s.id_siniestro}`} className="px-1.5 py-0.5 rounded-lg bg-[#1C1C1C] hover:bg-[#242424] border border-[#2A2A2A] transition-colors">
+                              <ExternalLink className="w-2.5 h-2.5 text-neutral-500" />
+                            </Link>
+                          </div>
+                          <p className="text-[11px] text-neutral-600 mt-0.5">{s.ramo} · {s.ciudad}</p>
+                          {alertas[0] && <p className="text-[10px] text-red-400/70 mt-0.5 truncate">{alertas[0]}</p>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </Card>
+              </div>
+
+              <div className="rounded-2xl bg-[#1C1C1C] border border-[#2A2A2A] overflow-hidden" style={{ minHeight: 320 }}>
+                <Card title="Top Proveedores · Alertas" accent="#FF6500" link={{ href: '/proveedores', label: 'Ver todos' }}>
+                  <div className="overflow-auto h-full">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b border-[#242424]">
+                          {['Proveedor', 'Rojos', 'Score', 'Monto'].map(h => (
+                            <th key={h} className="text-left pb-2 px-1 text-[10px] font-bold text-neutral-600 uppercase tracking-wider">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {proveedores.map(p => {
+                          const maxR = Math.max(...proveedores.map(x => x.casos_rojos), 1)
+                          return (
+                            <tr key={p.id_proveedor} className="border-b border-[#1A1A1A] hover:bg-[#212121] transition-colors">
+                              <td className="py-2 px-1 font-medium text-white text-[12px]">{(p.nombre_proveedor || p.id_proveedor || '').slice(0, 18)}</td>
+                              <td className="py-2 px-1">
+                                <div className="flex items-center gap-1">
+                                  <span className="text-orange-400 font-bold text-[10px] w-4 text-right">{p.casos_rojos}</span>
+                                  <div className="w-10 h-1.5 rounded-full bg-[#2A2A2A]"><div className="h-full rounded-full bg-orange-500" style={{ width: `${(p.casos_rojos / maxR) * 100}%` }} /></div>
+                                </div>
+                              </td>
+                              <td className="py-2 px-1 text-neutral-400 text-[12px]">{formatScore(p.score_promedio)}</td>
+                              <td className="py-2 px-1 text-neutral-400 text-[12px]">{formatMoney(p.monto_total_reclamado)}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Full gridstack view ────────────────────────────────────────── */}
+        {!minimalista && (<>
         <div className="px-6">
           <div key={gridKey} ref={gridRef} className="grid-stack">
 
@@ -775,20 +871,21 @@ export default function DashboardPage() {
               <div className="grid-stack-item-content">
                 <Card title="Alertas por Nivel · Distribución Mensual" accent="#ef4444" tooltip="Distribución mensual de alertas activadas agrupadas por nivel de riesgo. Muestra si hay incremento de casos críticos.">
                   {monthTotals.length > 0 && (
-                    <BarChart
-                      xAxis={[{ scaleType: 'band', data: monthLabels, tickLabelStyle: { fill: '#4a4a4a', fontSize: 8 } }]}
-                      yAxis={[{ tickLabelStyle: { fill: '#4a4a4a', fontSize: 8 } }]}
+                    <LineChart
+                      xAxis={[{ scaleType: 'band', data: monthLabels, tickLabelStyle: { fill: '#e5e5e5', fontSize: 11, fontWeight: 500 } }]}
+                      yAxis={[{ tickLabelStyle: { fill: '#666', fontSize: 10 } }]}
                       series={[
-                        { data: monthRojos,     label: 'Rojo Alto',      color: '#ef4444', stack: 'niveles', highlightScope: hl },
-                        { data: monthAmarillos, label: 'Amarillo Medio', color: '#eab308', stack: 'niveles', highlightScope: hl },
-                        { data: monthVerdes,    label: 'Verde Bajo',     color: '#22c55e', stack: 'niveles', highlightScope: hl },
+                        { data: monthVerdes,    label: 'Verde Bajo',     color: '#22c55e', area: true, showMark: false, curve: 'monotoneX', stack: 'total', highlightScope: hl },
+                        { data: monthAmarillos, label: 'Amarillo Medio', color: '#eab308', area: true, showMark: false, curve: 'monotoneX', stack: 'total', highlightScope: hl },
+                        { data: monthRojos,     label: 'Rojo Alto',      color: '#ef4444', area: true, showMark: false, curve: 'monotoneX', stack: 'total', highlightScope: hl },
                       ]}
-                      height={280}
-                      borderRadius={3}
+                      height={340}
                       hideLegend
                       sx={{
                         '& .MuiChartsAxis-line, & .MuiChartsAxis-tick': { stroke: 'transparent' },
                         '& .MuiChartsGrid-line': { stroke: '#1E1E1E', strokeDasharray: '3 3' },
+                        '& .MuiAreaElement-root': { fillOpacity: 0.15 },
+                        '& .MuiLineElement-root': { strokeWidth: 2 },
                       }}
                     />
                   )}
@@ -1245,6 +1342,8 @@ export default function DashboardPage() {
             border-radius: 16px !important;
           }
         `}</style>
+        </>)} {/* end !minimalista */}
+
       </div>
     </ThemeProvider>
   )
